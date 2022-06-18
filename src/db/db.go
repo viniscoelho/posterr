@@ -59,13 +59,6 @@ func InitializeDatabase() {
 		log.Print("Table posts already exists. Skipping...")
 	}
 
-	if err = createRepostsTable(conn); err != nil {
-		if !tableExists(err) {
-			log.Fatalf("Table reposts creation failed: %s", err)
-		}
-		log.Print("Table reposts already exists. Skipping...")
-	}
-
 	if err = createFollowersTable(conn); err != nil {
 		if !tableExists(err) {
 			log.Fatalf("Table followers creation failed: %s", err)
@@ -118,10 +111,10 @@ func createPostsTable(conn *pgxpool.Pool) error {
 	table := `CREATE TABLE posts(
         post_id SERIAL PRIMARY KEY,
         username VARCHAR (14) NOT NULL REFERENCES users (username),
-        content VARCHAR (777) NOT NULL,
+        content VARCHAR (777),
+        reposted_id INTEGER,
         created_on TIMESTAMPTZ DEFAULT NOW(),
-        quoted_post INTEGER,
-        FOREIGN KEY (quoted_post) REFERENCES posts (post_id))`
+        FOREIGN KEY (reposted_id) REFERENCES posts (post_id))`
 
 	_, err := conn.Exec(context.Background(), table)
 	if err != nil {
@@ -129,23 +122,6 @@ func createPostsTable(conn *pgxpool.Pool) error {
 	}
 
 	log.Printf("Table posts created!")
-	return nil
-}
-
-func createRepostsTable(conn *pgxpool.Pool) error {
-	table := `CREATE TABLE reposts(
-        post_id INTEGER NOT NULL,
-        reposted_by VARCHAR (14) NOT NULL,
-        FOREIGN KEY (post_id) REFERENCES posts (post_id),
-        FOREIGN KEY (reposted_by) REFERENCES users (username),
-        PRIMARY KEY(post_id, reposted_by))`
-
-	_, err := conn.Exec(context.Background(), table)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Table reposts created!")
 	return nil
 }
 
