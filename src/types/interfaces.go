@@ -28,7 +28,7 @@ type PosterrContent struct {
 	Username   string    `json:"username"`
 	Content    string    `json:"content,omitempty"`
 	RepostedId int       `json:"reposted_id,omitempty"`
-	CreatedOn  time.Time `json:"created_on,omitempty"`
+	CreatedAt  time.Time `json:"created_at,omitempty"`
 }
 
 type Posterr interface {

@@ -96,7 +96,7 @@ func createDatabase(conn *pgxpool.Pool) error {
 func createUsersTable(conn *pgxpool.Pool) error {
 	table := `CREATE TABLE users(
         username VARCHAR (14) NOT NULL PRIMARY KEY,
-        created_on TIMESTAMPTZ DEFAULT NOW())`
+        joined_at TIMESTAMPTZ DEFAULT NOW())`
 
 	_, err := conn.Exec(context.Background(), table)
 	if err != nil {
@@ -113,7 +113,7 @@ func createPostsTable(conn *pgxpool.Pool) error {
         username VARCHAR (14) NOT NULL REFERENCES users (username),
         content VARCHAR (777),
         reposted_id INTEGER,
-        created_on TIMESTAMPTZ DEFAULT NOW(),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
         FOREIGN KEY (reposted_id) REFERENCES posts (post_id))`
 
 	_, err := conn.Exec(context.Background(), table)
