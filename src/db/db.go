@@ -17,11 +17,11 @@ import (
 */
 
 const (
-	connectionURL = "postgres://localhost:5432"
+	connectionURL  = "postgres://localhost:5432"
 	envDatabaseURL = "DATABASE_URL"
 
 	databaseCreationErrorCode = "SQLSTATE 42P04"
-	tableCreationErrorCode = "SQLSTATE 42P07"
+	tableCreationErrorCode    = "SQLSTATE 42P07"
 )
 
 // InitializeDatabase initializes the database if an init flag
@@ -75,7 +75,7 @@ func DatabaseConnect(dbName string) (*pgxpool.Pool, error) {
 
 	conn, err := pgxpool.Connect(context.Background(), os.Getenv(envDatabaseURL))
 	if err != nil {
-		return nil, fmt.Errorf("unable to connect to database: %w", err)
+		return nil, fmt.Errorf("pool connection failed: %w", err)
 	}
 
 	return conn, err
@@ -143,8 +143,8 @@ func createFollowersTable(conn *pgxpool.Pool) error {
 }
 
 func databaseExists(err error) bool {
-    if strings.Contains(err.Error(), databaseCreationErrorCode) {
-    	return true
+	if strings.Contains(err.Error(), databaseCreationErrorCode) {
+		return true
 	}
 	return false
 }

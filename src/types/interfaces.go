@@ -15,19 +15,20 @@ const (
 )
 
 type PosterrUser struct {
-	Username  string    `json:"username"`
-	Followers int       `json:"followers"`
-	Following int       `json:"following"`
-	Posts     int       `json:"posts"`
-	JoinedAt  time.Time `json:"joined_at"`
+	Username   string           `json:"username"`
+	Followers  int              `json:"followers"`
+	Following  int              `json:"following"`
+	PostsCount int              `json:"posts_count"`
+	Posts      []PosterrContent `json:"posts"`
+	JoinedAt   time.Time        `json:"joined_at"`
 }
 
 type PosterrContent struct {
-	ID         int       `json:"post_id"`
+	ID         int       `json:"post_id,omitempty"`
 	Username   string    `json:"username"`
 	Content    string    `json:"content,omitempty"`
 	RepostedId int       `json:"reposted_id,omitempty"`
-	CreatedOn  time.Time `json:"created_on"`
+	CreatedOn  time.Time `json:"created_on,omitempty"`
 }
 
 type Posterr interface {
