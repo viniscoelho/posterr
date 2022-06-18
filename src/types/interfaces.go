@@ -1,7 +1,11 @@
 //go:generate mockgen -destination=mocks/mocks.go -package=mocks posterr/src/types Posterr,Users
 package types
 
-import "time"
+import (
+	"time"
+
+	_ "github.com/golang/mock/mockgen/model"
+)
 
 type PostsListToggle int
 
@@ -32,7 +36,7 @@ type Posterr interface {
 	WritePost(username, postContent string, repostedId int) error
 }
 
-type User interface {
+type Users interface {
 	GetUserProfile(username string) (PosterrUser, error)
 	CountUserPosts(username string) (int, error)
 	CountUserFollowers(username string) (int, error)
