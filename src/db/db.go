@@ -8,8 +8,6 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-
-	"posterr/src/types"
 )
 
 /*
@@ -20,16 +18,46 @@ const (
 	connectionURL  = "postgres://localhost:5432"
 	envDatabaseURL = "DATABASE_URL"
 
+	databaseName = "posterr"
+	databasePath = "/posterr"
+
 	databaseCreationErrorCode = "SQLSTATE 42P04"
 	tableCreationErrorCode    = "SQLSTATE 42P07"
 )
 
-// InitializeDatabase initializes the database if an init flag
-// is given in the main function
-func InitializeDatabase() {
-	conn, err := DatabaseConnect("")
+type postgresDB struct {
+	databaseName string
+}
+
+type ConnectDB interface {
+	Connect() (*pgxpool.Pool, error)
+	InitializeDB()
+}
+
+// TODO: databaseName could be given as a param,
+// but it should not be necessary for this scenario
+func NewDatabase() *postgresDB {
+	return &postgresDB{
+		databaseName: databaseName,
+	}
+}
+
+// Connect connects to the default database
+func (pg *postgresDB) Connect() (*pgxpool.Pool, error) {
+	conn, err := connect(pg.databaseName)
 	if err != nil {
-		log.Fatalf("An error occured: %s", err)
+		return nil, err
+	}
+
+	return conn, err
+}
+
+// InitializeDB initializes the database if an init flag
+// is given in the main function
+func (pg *postgresDB) InitializeDB() {
+	conn, err := connect("")
+	if err != nil {
+		log.Fatalf("Database connection failed: %s", err)
 	}
 
 	if err = createDatabase(conn); err != nil {
@@ -39,7 +67,7 @@ func InitializeDatabase() {
 		log.Print("Database already exists. Skipping...")
 	}
 
-	conn, err = DatabaseConnect(types.DatabasePath)
+	conn, err = connect(databasePath)
 	if err != nil {
 		log.Fatalf("Database connection failed: %s", err)
 	}
@@ -67,7 +95,7 @@ func InitializeDatabase() {
 	}
 }
 
-func DatabaseConnect(dbName string) (*pgxpool.Pool, error) {
+func connect(dbName string) (*pgxpool.Pool, error) {
 	err := os.Setenv(envDatabaseURL, fmt.Sprintf("%s%s", connectionURL, dbName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to set %s: %w", envDatabaseURL, err)
@@ -84,7 +112,7 @@ func DatabaseConnect(dbName string) (*pgxpool.Pool, error) {
 func createDatabase(conn *pgxpool.Pool) error {
 	defer conn.Close()
 
-	_, err := conn.Exec(context.Background(), fmt.Sprintf(`CREATE DATABASE %s`, types.DatabaseName))
+	_, err := conn.Exec(context.Background(), fmt.Sprintf(`CREATE DATABASE %s`, databaseName))
 	if err != nil {
 		return err
 	}

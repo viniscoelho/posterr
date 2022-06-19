@@ -28,7 +28,7 @@ const (
                  LIMIT 10
                  OFFSET $2`
 
-	selectProfile = `SELECT *
+	selectProfilePosts = `SELECT *
                  FROM posts
                  WHERE username = $1
                  ORDER BY created_at DESC
@@ -41,14 +41,18 @@ const (
                  AND created_at == date_trunc('day', NOW())`
 )
 
-type posterrBacked struct{}
+type posterrBacked struct {
+	db db.ConnectDB
+}
 
-func NewPosterrBacked() (*posterrBacked, error) {
-	return &posterrBacked{}, nil
+func NewPosterrBacked(db db.ConnectDB) (*posterrBacked, error) {
+	return &posterrBacked{
+		db: db,
+	}, nil
 }
 
 func (pb *posterrBacked) ListHomePagePosts(username string, offset int, toggle types.PostsListToggle) ([]types.PosterrContent, error) {
-	conn, err := db.DatabaseConnect(types.DatabaseName)
+	conn, err := pb.db.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
 	}
@@ -82,13 +86,13 @@ func (pb *posterrBacked) ListHomePagePosts(username string, offset int, toggle t
 }
 
 func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.PosterrContent, error) {
-	conn, err := db.DatabaseConnect(types.DatabaseName)
+	conn, err := pb.db.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), selectProfile, username, offset)
+	rows, err := conn.Query(context.Background(), selectProfilePosts, username, offset)
 	if err != nil {
 		return nil, fmt.Errorf("could not perform query: %w", err)
 	}
@@ -112,7 +116,7 @@ func (pb *posterrBacked) WritePost(username, postContent string, repostedId int)
 		return fmt.Errorf("either content or reposted_id should have a value")
 	}
 
-	conn, err := db.DatabaseConnect(types.DatabaseName)
+	conn, err := pb.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
 	}
@@ -147,7 +151,7 @@ func (pb *posterrBacked) WritePost(username, postContent string, repostedId int)
 }
 
 func (pb *posterrBacked) countDailyPosts(username string) (int, error) {
-	conn, err := db.DatabaseConnect(types.DatabaseName)
+	conn, err := pb.db.Connect()
 	if err != nil {
 		return 0, fmt.Errorf("could not connect to database: %w", err)
 	}
