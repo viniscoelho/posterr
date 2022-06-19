@@ -108,6 +108,9 @@ func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.
 
 func (pb *posterrBacked) WritePost(username, postContent string, repostedId int) error {
 	// TODO: Content size should not be superior than 777 chars
+	if len(postContent) == 0 && repostedId == 0 {
+		return fmt.Errorf("either content or reposted_id should have a value")
+	}
 
 	conn, err := db.DatabaseConnect(types.DatabaseName)
 	if err != nil {
@@ -122,8 +125,6 @@ func (pb *posterrBacked) WritePost(username, postContent string, repostedId int)
 
 	if dailyPosts >= maxDailyPosts {
 		return fmt.Errorf("exceeded maximum daily posts")
-	} else if len(postContent) == 0 && repostedId == 0 {
-		return fmt.Errorf("either content or reposted_id should have a value")
 	} else if repostedId == 0 {
 		// if repostedId is zero, this is a regular post
 		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, reposted_id) VALUES ($1, $2)",
