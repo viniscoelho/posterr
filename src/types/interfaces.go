@@ -38,7 +38,7 @@ type Posterr interface {
 }
 
 type Users interface {
-	GetUserProfile(username string) (PosterrUser, error)
+	GetUserProfile(username string, offset int) (PosterrUser, error)
 	CountUserPosts(username string) (int, error)
 	CountUserFollowers(username string) (int, error)
 	CountUserFollowing(username string) (int, error)

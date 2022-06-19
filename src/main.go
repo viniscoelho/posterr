@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"posterr/src/storage"
 
 	"posterr/src/postgres"
 )
@@ -15,6 +16,9 @@ func main() {
 	if *initDB {
 		db.InitializeDB()
 	}
+
+	posts := storage.NewPosterrBacked(db)
+	users := storage.NewUserBacked(db, posts)
 
 	/*
 		ls, err := storage.NewLottoBacked()
