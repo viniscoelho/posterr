@@ -41,6 +41,21 @@ func NewUserBacked(db postgres.ConnectDB, posts types.Posterr) *userBacked {
 	}
 }
 
+func (ub *userBacked) CreateUser(username string) error {
+	conn, err := ub.db.Connect()
+	if err != nil {
+		return fmt.Errorf("could not connect to database: %w", err)
+	}
+	defer conn.Close()
+
+	_, err = conn.Exec(context.Background(), "INSERT INTO users (username) VALUES ($1)", username)
+	if err != nil {
+		return fmt.Errorf("could not insert into users: %w", err)
+	}
+
+	return nil
+}
+
 func (ub *userBacked) GetUserProfile(username string, offset int) (types.PosterrUser, error) {
 	userProfile, err := ub.getUserDetails(username)
 	if err != nil {
