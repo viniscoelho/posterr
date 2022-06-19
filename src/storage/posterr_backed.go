@@ -38,7 +38,7 @@ const (
 	countDailyPosts = `SELECT COUNT(*) as daily_posts
                  FROM posts
                  WHERE username = $1
-                 AND created_at == date_trunc('day', NOW())`
+                 AND date_trunc('day', created_at) = date_trunc('day', NOW())`
 )
 
 type posterrBacked struct {
@@ -131,12 +131,12 @@ func (pb *posterrBacked) WritePost(username, postContent string, repostedId int)
 		return fmt.Errorf("exceeded maximum daily posts")
 	} else if repostedId == 0 {
 		// if repostedId is zero, this is a regular post
-		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, reposted_id) VALUES ($1, $2)",
-			username, repostedId)
-	} else if len(postContent) == 0 {
-		// if postContent is empty, this is a repost
 		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, content) VALUES ($1, $2)",
 			username, postContent)
+	} else if len(postContent) == 0 {
+		// if postContent is empty, this is a repost
+		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, reposted_id) VALUES ($1, $2)",
+			username, repostedId)
 	} else {
 		// otherwise, this is a quoted-repost
 		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, content, reposted_id) VALUES ($1, $2, $3)",

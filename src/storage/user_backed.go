@@ -42,6 +42,7 @@ func NewUserBacked(db postgres.ConnectDB, posts types.Posterr) *userBacked {
 }
 
 func (ub *userBacked) CreateUser(username string) error {
+	// TODO: username must consist of alphanumeric chars only
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)

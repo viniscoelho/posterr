@@ -38,7 +38,7 @@ type ConnectDB interface {
 // but it should not be necessary for this scenario
 func NewDatabase() *postgresDB {
 	return &postgresDB{
-		databaseName: databaseName,
+		databaseName: databasePath,
 	}
 }
 
@@ -141,8 +141,7 @@ func createPostsTable(conn *pgxpool.Pool) error {
         username VARCHAR (14) NOT NULL REFERENCES users (username),
         content VARCHAR (777),
         reposted_id INTEGER,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        FOREIGN KEY (reposted_id) REFERENCES posts (post_id))`
+        created_at TIMESTAMPTZ DEFAULT NOW())`
 
 	_, err := conn.Exec(context.Background(), table)
 	if err != nil {
