@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
-	"posterr/src/db"
+	"posterr/src/postgres"
 	"posterr/src/types"
 
 	"github.com/jackc/pgx/v4"
@@ -42,13 +42,13 @@ const (
 )
 
 type posterrBacked struct {
-	db db.ConnectDB
+	db postgres.ConnectDB
 }
 
-func NewPosterrBacked(db db.ConnectDB) (*posterrBacked, error) {
+func NewPosterrBacked(db postgres.ConnectDB) *posterrBacked {
 	return &posterrBacked{
 		db: db,
-	}, nil
+	}
 }
 
 func (pb *posterrBacked) ListHomePagePosts(username string, offset int, toggle types.PostsListToggle) ([]types.PosterrContent, error) {
