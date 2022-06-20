@@ -49,7 +49,7 @@ func (pg *postgresDB) Connect() (*pgxpool.Pool, error) {
 	return conn, err
 }
 
-// InitializeDB initializes the database if an init flag is given
+// InitializeDB creates a database and its tables
 func (pg *postgresDB) InitializeDB() error {
 	if err := createDatabase(pg.databaseName); err != nil {
 		if !databaseExists(err) {
