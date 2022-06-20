@@ -2,23 +2,22 @@ package main
 
 import (
 	"flag"
-	"posterr/src/storage"
+	"log"
 
-	"posterr/src/postgres"
+	"posterr/src/storage/postgres"
 )
 
-var initDB = flag.Bool("init-postgres", false, "creates a database and its tables")
+var initDB = flag.Bool("init-db", false, "creates a database and its tables")
 
 func main() {
 	flag.Parse()
 
-	db := postgres.NewDatabase()
+	db := postgres.NewDatabase(postgres.DatabaseName)
 	if *initDB {
-		db.InitializeDB()
+		if err := db.InitializeDB(); err != nil {
+			log.Fatalf("An error occurred: %s", err)
+		}
 	}
-
-	posts := storage.NewPosterrBacked(db)
-	users := storage.NewUserBacked(db, posts)
 
 	/*
 		ls, err := storage.NewLottoBacked()
