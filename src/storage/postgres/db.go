@@ -15,11 +15,10 @@ import (
 */
 
 const (
+	DatabaseName = "posterr"
+
 	connectionURL  = "postgres://localhost:5432"
 	envDatabaseURL = "DATABASE_URL"
-
-	databaseName = "posterr"
-	databasePath = "/posterr"
 
 	databaseCreationErrorCode = "SQLSTATE 42P04"
 	tableCreationErrorCode    = "SQLSTATE 42P07"
@@ -34,11 +33,9 @@ type ConnectDB interface {
 	InitializeDB()
 }
 
-// TODO: databaseName could be given as a param,
-// but it should not be necessary for this scenario
-func NewDatabase() *postgresDB {
+func NewDatabase(dbName string) *postgresDB {
 	return &postgresDB{
-		databaseName: databasePath,
+		databaseName: dbName,
 	}
 }
 
@@ -55,48 +52,22 @@ func (pg *postgresDB) Connect() (*pgxpool.Pool, error) {
 // InitializeDB initializes the database if an init flag
 // is given in the main function
 func (pg *postgresDB) InitializeDB() {
-	conn, err := connect("")
-	if err != nil {
-		log.Fatalf("Database connection failed: %s", err)
-	}
-
-	if err = createDatabase(conn); err != nil {
+	if err := pg.createDatabase(); err != nil {
 		if !databaseExists(err) {
 			log.Fatalf("Database creation failed: %s", err)
 		}
 		log.Print("Database already exists. Skipping...")
 	}
 
-	conn, err = connect(databasePath)
+	conn, err := connect(pg.databaseName)
 	if err != nil {
 		log.Fatalf("Database connection failed: %s", err)
 	}
-	defer conn.Close()
-
-	if err = createUsersTable(conn); err != nil {
-		if !tableExists(err) {
-			log.Fatalf("Table users creation failed: %s", err)
-		}
-		log.Print("Table users already exists. Skipping...")
-	}
-
-	if err = createPostsTable(conn); err != nil {
-		if !tableExists(err) {
-			log.Fatalf("Table posts creation failed: %s", err)
-		}
-		log.Print("Table posts already exists. Skipping...")
-	}
-
-	if err = createFollowersTable(conn); err != nil {
-		if !tableExists(err) {
-			log.Fatalf("Table followers creation failed: %s", err)
-		}
-		log.Print("Table followers already exists. Skipping...")
-	}
+	createTables(conn)
 }
 
 func connect(dbName string) (*pgxpool.Pool, error) {
-	err := os.Setenv(envDatabaseURL, fmt.Sprintf("%s%s", connectionURL, dbName))
+	err := os.Setenv(envDatabaseURL, fmt.Sprintf("%s/%s", connectionURL, dbName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to set %s: %w", envDatabaseURL, err)
 	}
@@ -109,16 +80,45 @@ func connect(dbName string) (*pgxpool.Pool, error) {
 	return conn, err
 }
 
-func createDatabase(conn *pgxpool.Pool) error {
+func (pg *postgresDB) createDatabase() error {
+	conn, err := connect("")
+	if err != nil {
+		log.Fatalf("Database connection failed: %s", err)
+	}
 	defer conn.Close()
 
-	_, err := conn.Exec(context.Background(), fmt.Sprintf(`CREATE DATABASE %s`, databaseName))
+	_, err = conn.Exec(context.Background(), fmt.Sprintf(`CREATE DATABASE %s`, pg.databaseName))
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Database created!")
+	log.Printf("Database %s created!", pg.databaseName)
 	return nil
+}
+
+func createTables(conn *pgxpool.Pool) {
+	defer conn.Close()
+
+	if err := createUsersTable(conn); err != nil {
+		if !tableExists(err) {
+			log.Fatalf("Table users creation failed: %s", err)
+		}
+		log.Print("Table users already exists. Skipping...")
+	}
+
+	if err := createPostsTable(conn); err != nil {
+		if !tableExists(err) {
+			log.Fatalf("Table posts creation failed: %s", err)
+		}
+		log.Print("Table posts already exists. Skipping...")
+	}
+
+	if err := createFollowersTable(conn); err != nil {
+		if !tableExists(err) {
+			log.Fatalf("Table followers creation failed: %s", err)
+		}
+		log.Print("Table followers already exists. Skipping...")
+	}
 }
 
 func createUsersTable(conn *pgxpool.Pool) error {

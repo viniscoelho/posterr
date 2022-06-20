@@ -3,7 +3,8 @@ package storage
 import (
 	"context"
 	"fmt"
-	"posterr/src/postgres"
+
+	"posterr/src/storage/postgres"
 	"posterr/src/types"
 )
 
