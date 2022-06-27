@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"posterr/src/storage/postgres"
 	"posterr/src/types"
@@ -30,18 +31,33 @@ const (
                  WHERE username = $1 AND followed_by = $2`
 )
 
+type FollowUser struct {
+	Username string
+	Follows  bool
+}
+
 type userBacked struct {
-	db    postgres.ConnectDB
+	sync.RWMutex
+	// An accessor to the database
+	db postgres.ConnectDB
+	// An accessor to the Posterr interface
 	posts types.Posterr
+	// A cache map to store how many followers a user has
+	followersCount map[string]int
+	// A cache map to store how many users a user is following
+	followingCount map[string]int
 }
 
 func NewUserBacked(db postgres.ConnectDB, posts types.Posterr) *userBacked {
 	return &userBacked{
-		db:    db,
-		posts: posts,
+		db:             db,
+		posts:          posts,
+		followersCount: make(map[string]int),
+		followingCount: make(map[string]int),
 	}
 }
 
+// CreateUser creates a user. This method is not exposed through an API
 func (ub *userBacked) CreateUser(username string) error {
 	// TODO: username must consist of alphanumeric chars only
 	conn, err := ub.db.Connect()
@@ -58,6 +74,7 @@ func (ub *userBacked) CreateUser(username string) error {
 	return nil
 }
 
+// GetUserProfile returns a user detailed information
 func (ub *userBacked) GetUserProfile(username string, offset int) (types.PosterrUser, error) {
 	userProfile, err := ub.getUserDetails(username)
 	if err != nil {
@@ -87,6 +104,7 @@ func (ub *userBacked) GetUserProfile(username string, offset int) (types.Posterr
 	return userProfile, nil
 }
 
+// CountUserPosts returns how many posts a user has made
 func (ub *userBacked) CountUserPosts(username string) (int, error) {
 	conn, err := ub.db.Connect()
 	if err != nil {
@@ -109,7 +127,19 @@ func (ub *userBacked) CountUserPosts(username string) (int, error) {
 	return dailyPosts, nil
 }
 
+// CountUserFollowing returns how many followers a user has
 func (ub *userBacked) CountUserFollowers(username string) (int, error) {
+	count, exists := func(username string) (int, bool) {
+		ub.RLock()
+		defer ub.RUnlock()
+		count, exists := ub.followersCount[username]
+		return count, exists
+	}(username)
+
+	if exists {
+		return count, nil
+	}
+
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return 0, fmt.Errorf("could not connect to database: %w", err)
@@ -128,10 +158,28 @@ func (ub *userBacked) CountUserFollowers(username string) (int, error) {
 		}
 	}
 
+	func(username string) {
+		ub.Lock()
+		defer ub.Unlock()
+		ub.followersCount[username] = followers
+	}(username)
+
 	return followers, nil
 }
 
+// CountUserFollowing returns how many users a user is following
 func (ub *userBacked) CountUserFollowing(username string) (int, error) {
+	count, exists := func(username string) (int, bool) {
+		ub.RLock()
+		defer ub.RUnlock()
+		count, exists := ub.followingCount[username]
+		return count, exists
+	}(username)
+
+	if exists {
+		return count, nil
+	}
+
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return 0, fmt.Errorf("could not connect to database: %w", err)
@@ -150,27 +198,44 @@ func (ub *userBacked) CountUserFollowing(username string) (int, error) {
 		}
 	}
 
+	func(username string) {
+		ub.Lock()
+		defer ub.Unlock()
+		ub.followingCount[username] = following
+	}(username)
+
 	return following, nil
 }
 
-func (ub *userBacked) FollowUser(followerUsername, followingUsername string) error {
+// FollowUser ensures that userA is followed by userB,
+// i.e., userB follows userA
+func (ub *userBacked) FollowUser(userA, userB string) error {
+	func(a, b string) {
+		ub.Lock()
+		defer ub.Unlock()
+		// reset userB followers cache
+		delete(ub.followersCount, b)
+		// reset userA following cache
+		delete(ub.followingCount, a)
+	}(userA, userB)
+
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
 	}
 	defer conn.Close()
 
-	isFollowingUser, err := ub.IsFollowingUser(followerUsername, followingUsername)
+	isFollowingUser, err := ub.IsFollowingUser(userA, userB)
 	if err != nil {
 		return fmt.Errorf("could not check activity: %w", err)
 	}
 
 	if isFollowingUser {
-		return fmt.Errorf("%s already follows %s", followerUsername, followingUsername)
+		return fmt.Errorf("%s already follows %s", userA, userB)
 	}
 
 	_, err = conn.Exec(context.Background(), "INSERT INTO followers (username, followed_by) VALUES ($1, $2)",
-		followerUsername, followingUsername)
+		userA, userB)
 	if err != nil {
 		return fmt.Errorf("could not insert into followers: %w", err)
 	}
@@ -178,24 +243,35 @@ func (ub *userBacked) FollowUser(followerUsername, followingUsername string) err
 	return nil
 }
 
-func (ub *userBacked) UnfollowUser(followerUsername, followingUsername string) error {
+// UnfollowUser ensures that userA is unfollowed by userB,
+// i.e., userB unfollows userA
+func (ub *userBacked) UnfollowUser(userA, userB string) error {
+	func(a, b string) {
+		ub.Lock()
+		defer ub.Unlock()
+		// reset userB followers cache
+		delete(ub.followersCount, b)
+		// reset userA following cache
+		delete(ub.followingCount, a)
+	}(userA, userB)
+
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
 	}
 	defer conn.Close()
 
-	isFollowingUser, err := ub.IsFollowingUser(followerUsername, followingUsername)
+	isFollowingUser, err := ub.IsFollowingUser(userA, userB)
 	if err != nil {
 		return fmt.Errorf("could not check activity: %w", err)
 	}
 
 	if !isFollowingUser {
-		return fmt.Errorf("%s does not follow %s", followerUsername, followingUsername)
+		return fmt.Errorf("%s does not follow %s", userA, userB)
 	}
 
 	_, err = conn.Exec(context.Background(), "DELETE FROM followers WHERE username = $1 AND followed_by = $2",
-		followerUsername, followingUsername)
+		userA, userB)
 	if err != nil {
 		return fmt.Errorf("could not delete row from followers: %w", err)
 	}
@@ -203,14 +279,15 @@ func (ub *userBacked) UnfollowUser(followerUsername, followingUsername string) e
 	return nil
 }
 
-func (ub *userBacked) IsFollowingUser(followerUsername, followingUsername string) (bool, error) {
+// IsFollowingUser checks if userA is following userB
+func (ub *userBacked) IsFollowingUser(userA, userB string) (bool, error) {
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return false, fmt.Errorf("could not connect to database: %w", err)
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), isFollowerOf, followerUsername, followingUsername)
+	rows, err := conn.Query(context.Background(), isFollowerOf, userA, userB)
 	if err != nil {
 		return false, fmt.Errorf("could not perform query: %w", err)
 	}
@@ -225,6 +302,8 @@ func (ub *userBacked) IsFollowingUser(followerUsername, followingUsername string
 	return countRows == 1, nil
 }
 
+// getUserDetails returns a PosterrUser containing
+// the username and the date they joined
 func (ub *userBacked) getUserDetails(username string) (types.PosterrUser, error) {
 	conn, err := ub.db.Connect()
 	if err != nil {
