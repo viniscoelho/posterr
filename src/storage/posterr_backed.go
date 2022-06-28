@@ -111,7 +111,6 @@ func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.
 }
 
 func (pb *posterrBacked) WritePost(username, postContent string, repostedId int) error {
-	// TODO: Content size should not be superior than 777 chars
 	if len(postContent) == 0 && repostedId == 0 {
 		return fmt.Errorf("either content or reposted_id should have a value")
 	}

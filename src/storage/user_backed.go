@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sync"
 
 	"posterr/src/storage/postgres"
@@ -46,6 +47,8 @@ type userBacked struct {
 	followersCount map[string]int
 	// A cache map to store how many users a user is following
 	followingCount map[string]int
+	// A regex to validate usernames
+	rgx *regexp.Regexp
 }
 
 func NewUserBacked(db postgres.ConnectDB, posts types.Posterr) *userBacked {
@@ -54,12 +57,16 @@ func NewUserBacked(db postgres.ConnectDB, posts types.Posterr) *userBacked {
 		posts:          posts,
 		followersCount: make(map[string]int),
 		followingCount: make(map[string]int),
+		rgx:            regexp.MustCompile(`^[a-zA-Z0-9]*$`),
 	}
 }
 
 // CreateUser creates a user. This method is not exposed through an API
 func (ub *userBacked) CreateUser(username string) error {
-	// TODO: username must consist of alphanumeric chars only
+	if !ub.rgx.MatchString(username) {
+		return fmt.Errorf("invalid username: a username must consist of alphanumeric charactes only")
+	}
+
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)

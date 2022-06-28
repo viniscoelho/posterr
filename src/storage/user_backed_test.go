@@ -31,6 +31,9 @@ func TestUserCreation(t *testing.T) {
 
 	err = users.CreateUser("vinicius1234567")
 	assert.Error(err)
+
+	err = users.CreateUser("vinicius123456@")
+	assert.Error(err)
 }
 
 func dropDatabase(dbName string) {
