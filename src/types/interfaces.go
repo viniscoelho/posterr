@@ -43,7 +43,7 @@ type Users interface {
 	CountUserPosts(username string) (int, error)
 	CountUserFollowers(username string) (int, error)
 	CountUserFollowing(username string) (int, error)
-	FollowUser(followerUsername, followingUsername string) error
-	UnfollowUser(followerUsername, followingUsername string) error
-	IsFollowingUser(followerUsername, followingUsername string) (bool, error)
+	FollowUser(userA, userB string) error
+	UnfollowUser(userA, userB string) error
+	IsFollowingUser(userA, userB string) (bool, error)
 }
