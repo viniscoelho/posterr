@@ -217,15 +217,6 @@ func (ub *userBacked) CountUserFollowing(username string) (int, error) {
 // FollowUser ensures that userA is followed by userB,
 // i.e., userB follows userA
 func (ub *userBacked) FollowUser(userA, userB string) error {
-	func(a, b string) {
-		ub.Lock()
-		defer ub.Unlock()
-		// reset userB followers cache
-		delete(ub.followersCount, b)
-		// reset userA following cache
-		delete(ub.followingCount, a)
-	}(userA, userB)
-
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
@@ -241,6 +232,7 @@ func (ub *userBacked) FollowUser(userA, userB string) error {
 		return fmt.Errorf("%s already follows %s", userA, userB)
 	}
 
+	defer ub.resetCountCache(userA, userB)
 	_, err = conn.Exec(context.Background(), "INSERT INTO followers (username, followed_by) VALUES ($1, $2)",
 		userA, userB)
 	if err != nil {
@@ -253,15 +245,6 @@ func (ub *userBacked) FollowUser(userA, userB string) error {
 // UnfollowUser ensures that userA is unfollowed by userB,
 // i.e., userB unfollows userA
 func (ub *userBacked) UnfollowUser(userA, userB string) error {
-	func(a, b string) {
-		ub.Lock()
-		defer ub.Unlock()
-		// reset userB followers cache
-		delete(ub.followersCount, b)
-		// reset userA following cache
-		delete(ub.followingCount, a)
-	}(userA, userB)
-
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
@@ -277,6 +260,7 @@ func (ub *userBacked) UnfollowUser(userA, userB string) error {
 		return fmt.Errorf("%s does not follow %s", userA, userB)
 	}
 
+	defer ub.resetCountCache(userA, userB)
 	_, err = conn.Exec(context.Background(), "DELETE FROM followers WHERE username = $1 AND followed_by = $2",
 		userA, userB)
 	if err != nil {
@@ -331,4 +315,15 @@ func (ub *userBacked) getUserDetails(username string) (types.PosterrUser, error)
 	}
 
 	return userProfile, nil
+}
+
+// resetCountCache resets the counter cache for
+// userA following count and userB followers count
+func (ub *userBacked) resetCountCache(userA, userB string) {
+	ub.Lock()
+	defer ub.Unlock()
+	// reset userB followers cache
+	delete(ub.followersCount, userB)
+	// reset userA following cache
+	delete(ub.followingCount, userA)
 }
