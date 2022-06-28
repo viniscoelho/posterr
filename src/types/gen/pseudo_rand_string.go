@@ -22,7 +22,7 @@ func NewPseudoRandomString() PseudoRand {
 
 func (r PseudoRand) Generate(length int) string {
 	s := r.newString(length, charSet)
-	// generates a unique string
+	// ensures that a random string is generated
 	for _, exists := r.values[s]; exists; s = r.newString(length, charSet) {
 	}
 	r.values[s] = struct{}{}
