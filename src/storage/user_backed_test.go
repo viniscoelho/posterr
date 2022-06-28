@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	typesrand "posterr/src/types/gen"
 	"testing"
 
 	"posterr/src/storage/postgres"
@@ -22,18 +23,27 @@ func TestUserCreation(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
+	rs := typesrand.NewPseudoRandomString()
 
-	err = users.CreateUser("vinicius")
-	assert.NoError(err)
+	t.Run("Many random names", func(t *testing.T) {
+		for count := 0; count < 10; count++ {
+			username := rs.Generate(14)
+			err = users.CreateUser(username)
+			assert.NoError(err)
+		}
+	})
 
-	err = users.CreateUser("vinicius123456")
-	assert.NoError(err)
+	t.Run("Username too big", func(t *testing.T) {
+		username := rs.Generate(15)
+		err = users.CreateUser(username)
+		assert.Error(err)
+	})
 
-	err = users.CreateUser("vinicius1234567")
-	assert.Error(err)
-
-	err = users.CreateUser("vinicius123456@")
-	assert.Error(err)
+	t.Run("Username with invalid characters", func(t *testing.T) {
+		username := fmt.Sprintf("%s@", rs.Generate(13))
+		err = users.CreateUser(username)
+		assert.Error(err)
+	})
 }
 
 func dropDatabase(dbName string) {
