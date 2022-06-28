@@ -52,6 +52,7 @@ type userBacked struct {
 }
 
 func NewUserBacked(db postgres.ConnectDB, posts types.Posterr) *userBacked {
+	// TODO: should the connection pool be reset for every call?
 	return &userBacked{
 		db:             db,
 		posts:          posts,
@@ -217,6 +218,10 @@ func (ub *userBacked) CountUserFollowing(username string) (int, error) {
 // FollowUser ensures that userA is followed by userB,
 // i.e., userB follows userA
 func (ub *userBacked) FollowUser(userA, userB string) error {
+	if userA == userB {
+		return fmt.Errorf("%s cannot follow itself", userA)
+	}
+
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
@@ -245,6 +250,10 @@ func (ub *userBacked) FollowUser(userA, userB string) error {
 // UnfollowUser ensures that userA is unfollowed by userB,
 // i.e., userB unfollows userA
 func (ub *userBacked) UnfollowUser(userA, userB string) error {
+	if userA == userB {
+		return fmt.Errorf("%s cannot unfollow itself", userA)
+	}
+
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
