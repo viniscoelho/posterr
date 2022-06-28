@@ -26,21 +26,21 @@ func TestUserCreation(t *testing.T) {
 	rs := typesrand.NewPseudoRandomString()
 
 	t.Run("Many random names", func(t *testing.T) {
-		for count := 0; count < 10; count++ {
-			username := rs.Generate(14)
+		for count := 0; count < 100; count++ {
+			username := rs.GenerateUnique(14)
 			err = users.CreateUser(username)
 			assert.NoError(err)
 		}
 	})
 
 	t.Run("Username too big", func(t *testing.T) {
-		username := rs.Generate(15)
+		username := rs.GenerateUnique(15)
 		err = users.CreateUser(username)
 		assert.Error(err)
 	})
 
 	t.Run("Username with invalid characters", func(t *testing.T) {
-		username := fmt.Sprintf("%s@", rs.Generate(13))
+		username := fmt.Sprintf("%s@", rs.GenerateUnique(13))
 		err = users.CreateUser(username)
 		assert.Error(err)
 	})

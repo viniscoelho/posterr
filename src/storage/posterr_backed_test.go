@@ -1,10 +1,10 @@
 package storage
 
 import (
-	"strings"
 	"testing"
 
 	"posterr/src/storage/postgres"
+	typesrand "posterr/src/types/gen"
 
 	assertions "github.com/stretchr/testify/assert"
 )
@@ -22,22 +22,54 @@ func TestWritePost(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
+	rs := typesrand.NewPseudoRandomString()
 
-	err = users.CreateUser("vinicius")
+	username := rs.GenerateUnique(14)
+	err = users.CreateUser(username)
 	assert.NoError(err)
 
-	err = posts.WritePost("vinicius", "hello", 0)
+	t.Run("Empty content", func(t *testing.T) {
+		err = posts.WritePost(username, "", 0)
+		assert.Error(err)
+	})
+
+	t.Run("Content just right", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize)
+		err = posts.WritePost(username, content, 0)
+		assert.NoError(err)
+	})
+
+	t.Run("Content too long", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize + 1)
+		err = posts.WritePost(username, content, 0)
+		assert.Error(err)
+	})
+}
+
+func TestTooManyPosts(t *testing.T) {
+	assert := assertions.New(t)
+	dbName := "dummy"
+
+	db := postgres.NewDatabase(dbName)
+	err := db.InitializeDB()
+	defer dropDatabase(dbName)
 	assert.NoError(err)
 
-	err = posts.WritePost("vinicius", "", 0)
-	assert.Error(err)
+	posts := NewPosterrBacked(db)
+	users := NewUserBacked(db, posts)
+	rs := typesrand.NewPseudoRandomString()
 
-	justRight := strings.Repeat("1", maxContentSize)
-	tooLong := strings.Repeat("1", maxContentSize+1)
-
-	err = posts.WritePost("vinicius", justRight, 0)
+	username := rs.GenerateUnique(14)
+	err = users.CreateUser(username)
 	assert.NoError(err)
 
-	err = posts.WritePost("vinicius", tooLong, 0)
+	for i := 0; i < 5; i++ {
+		content := rs.GenerateAny(maxContentSize)
+		err = posts.WritePost(username, content, 0)
+		assert.NoError(err)
+	}
+
+	content := rs.GenerateAny(maxContentSize)
+	err = posts.WritePost(username, content, 0)
 	assert.Error(err)
 }
