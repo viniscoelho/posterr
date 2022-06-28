@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"posterr/src/storage/postgres"
-	typesrand "posterr/src/types/gen"
+	typesrand "posterr/src/types/rand"
 
 	assertions "github.com/stretchr/testify/assert"
 )

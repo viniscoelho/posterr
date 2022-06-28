@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	typesrand "posterr/src/types/gen"
+	typesrand "posterr/src/types/rand"
 	"sync"
 	"testing"
 
