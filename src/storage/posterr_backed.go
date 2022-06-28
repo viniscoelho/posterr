@@ -51,6 +51,10 @@ func NewPosterrBacked(db postgres.ConnectDB) *posterrBacked {
 	}
 }
 
+// ListHomePagePosts returns a list of posts:
+// - If the toggle is All, returns a list of posts from the whole database
+// - If the toggle is Following, returns a list of posts only from the users a given username follows
+// Each call returns 10 posts at most
 func (pb *posterrBacked) ListHomePagePosts(username string, offset int, toggle types.PostsListToggle) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
@@ -85,6 +89,8 @@ func (pb *posterrBacked) ListHomePagePosts(username string, offset int, toggle t
 	return posts, nil
 }
 
+// ListProfilePosts returns a lists of posts for a given username
+// Each call returns 5 posts at most
 func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
@@ -110,6 +116,7 @@ func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.
 	return posts, nil
 }
 
+// WritePost creates a posts for a given username
 func (pb *posterrBacked) WritePost(username, postContent string, repostedId int) error {
 	if len(postContent) == 0 && repostedId == 0 {
 		return fmt.Errorf("either content or reposted_id should have a value")
@@ -149,6 +156,7 @@ func (pb *posterrBacked) WritePost(username, postContent string, repostedId int)
 	return nil
 }
 
+// countDailyPosts returns how many posts where made in a single day
 func (pb *posterrBacked) countDailyPosts(username string) (int, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
