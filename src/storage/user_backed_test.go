@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	typesrand "posterr/src/types/rand"
 	"sync"
 	"testing"
 
-	"posterr/src/storage/postgres"
+	storagedb "posterr/src/storage/db"
+	typesrand "posterr/src/types/rand"
 
 	assertions "github.com/stretchr/testify/assert"
 )
@@ -19,7 +19,7 @@ func TestUserCreation(t *testing.T) {
 	assert := assertions.New(t)
 	dbName := "dummy"
 
-	db := postgres.NewDatabase(dbName)
+	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
 	defer dropDatabase(dbName)
 	assert.NoError(err)
@@ -53,7 +53,7 @@ func TestFollowUser(t *testing.T) {
 	assert := assertions.New(t)
 	dbName := "dummy"
 
-	db := postgres.NewDatabase(dbName)
+	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
 	defer dropDatabase(dbName)
 	assert.NoError(err)
@@ -114,7 +114,7 @@ func TestUnfollowUser(t *testing.T) {
 	assert := assertions.New(t)
 	dbName := "dummy"
 
-	db := postgres.NewDatabase(dbName)
+	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
 	defer dropDatabase(dbName)
 	assert.NoError(err)
@@ -180,7 +180,7 @@ func TestUnfollowUser(t *testing.T) {
 }
 
 func dropDatabase(dbName string) {
-	db := postgres.NewDatabase("postgres")
+	db := storagedb.NewDatabase("")
 
 	conn, err := db.Connect()
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"posterr/src/storage/postgres"
+	storagedb "posterr/src/storage/db"
 )
 
 var initDB = flag.Bool("init-db", false, "creates a database and its tables")
@@ -12,7 +12,7 @@ var initDB = flag.Bool("init-db", false, "creates a database and its tables")
 func main() {
 	flag.Parse()
 
-	db := postgres.NewDatabase(postgres.DatabaseName)
+	db := storagedb.NewDatabase(storagedb.DatabaseName)
 	if *initDB {
 		if err := db.InitializeDB(); err != nil {
 			log.Fatalf("An error occurred: %s", err)

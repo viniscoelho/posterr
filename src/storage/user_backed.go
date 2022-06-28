@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"sync"
 
-	"posterr/src/storage/postgres"
+	storagedb "posterr/src/storage/db"
 	"posterr/src/types"
 )
 
@@ -40,7 +40,7 @@ type FollowUser struct {
 type userBacked struct {
 	sync.RWMutex
 	// An accessor to the database
-	db postgres.ConnectDB
+	db storagedb.ConnectDB
 	// An accessor to the Posterr interface
 	posts types.Posterr
 	// A cache map to store how many followers a user has
@@ -51,7 +51,7 @@ type userBacked struct {
 	rgx *regexp.Regexp
 }
 
-func NewUserBacked(db postgres.ConnectDB, posts types.Posterr) *userBacked {
+func NewUserBacked(db storagedb.ConnectDB, posts types.Posterr) *userBacked {
 	// TODO: should the connection pool be reset for every call?
 	return &userBacked{
 		db:             db,

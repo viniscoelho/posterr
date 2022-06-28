@@ -3,7 +3,8 @@ package storage
 import (
 	"context"
 	"fmt"
-	"posterr/src/storage/postgres"
+
+	storagedb "posterr/src/storage/db"
 	"posterr/src/types"
 
 	"github.com/jackc/pgx/v4"
@@ -42,10 +43,10 @@ const (
 )
 
 type posterrBacked struct {
-	db postgres.ConnectDB
+	db storagedb.ConnectDB
 }
 
-func NewPosterrBacked(db postgres.ConnectDB) *posterrBacked {
+func NewPosterrBacked(db storagedb.ConnectDB) *posterrBacked {
 	return &posterrBacked{
 		db: db,
 	}

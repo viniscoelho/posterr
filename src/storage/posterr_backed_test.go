@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"posterr/src/storage/postgres"
+	storagedb "posterr/src/storage/db"
 	typesrand "posterr/src/types/rand"
 
 	assertions "github.com/stretchr/testify/assert"
@@ -15,7 +15,7 @@ func TestWritePost(t *testing.T) {
 	assert := assertions.New(t)
 	dbName := "dummy"
 
-	db := postgres.NewDatabase(dbName)
+	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
 	defer dropDatabase(dbName)
 	assert.NoError(err)
@@ -50,7 +50,7 @@ func TestTooManyPosts(t *testing.T) {
 	assert := assertions.New(t)
 	dbName := "dummy"
 
-	db := postgres.NewDatabase(dbName)
+	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
 	defer dropDatabase(dbName)
 	assert.NoError(err)
@@ -73,3 +73,5 @@ func TestTooManyPosts(t *testing.T) {
 	err = posts.WritePost(username, content, 0)
 	assert.Error(err)
 }
+
+// TODO: might be necessary to update write post to return the id of the post
