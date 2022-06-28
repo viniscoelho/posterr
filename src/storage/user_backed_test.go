@@ -12,6 +12,8 @@ import (
 	assertions "github.com/stretchr/testify/assert"
 )
 
+const maxUsernameLength = 14
+
 func TestUserCreation(t *testing.T) {
 	assert := assertions.New(t)
 	dbName := "dummy"
@@ -27,20 +29,20 @@ func TestUserCreation(t *testing.T) {
 
 	t.Run("Many random names", func(t *testing.T) {
 		for count := 0; count < 100; count++ {
-			username := rs.GenerateUnique(14)
+			username := rs.GenerateUnique(maxUsernameLength)
 			err = users.CreateUser(username)
 			assert.NoError(err)
 		}
 	})
 
 	t.Run("Username too big", func(t *testing.T) {
-		username := rs.GenerateUnique(15)
+		username := rs.GenerateUnique(maxUsernameLength + 1)
 		err = users.CreateUser(username)
 		assert.Error(err)
 	})
 
 	t.Run("Username with invalid characters", func(t *testing.T) {
-		username := fmt.Sprintf("%s@", rs.GenerateUnique(13))
+		username := fmt.Sprintf("%s@", rs.GenerateUnique(maxUsernameLength-1))
 		err = users.CreateUser(username)
 		assert.Error(err)
 	})
