@@ -7,6 +7,7 @@ import (
 	storagedb "posterr/src/storage/db"
 	"posterr/src/types"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -118,8 +119,8 @@ func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.
 }
 
 // WritePost creates a posts for a given username
-func (pb *posterrBacked) WritePost(username, postContent string, repostedId int) error {
-	if len(postContent) == 0 && repostedId == 0 {
+func (pb *posterrBacked) WritePost(username, postContent, repostedId string) error {
+	if len(postContent) == 0 && len(repostedId) == 0 {
 		return fmt.Errorf("either content or reposted_id should have a value")
 	}
 
@@ -134,20 +135,21 @@ func (pb *posterrBacked) WritePost(username, postContent string, repostedId int)
 		return fmt.Errorf("could not count daily posts: %w", err)
 	}
 
+	postId := uuid.New()
 	if dailyPosts >= maxDailyPosts {
 		return fmt.Errorf("exceeded maximum daily posts")
-	} else if repostedId == 0 {
-		// if repostedId is zero, this is a regular post
-		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, content) VALUES ($1, $2)",
-			username, postContent)
+	} else if len(repostedId) == 0 {
+		// if repostedId is empty, this is a regular post
+		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content) VALUES ($1, $2, $3)",
+			postId.String(), username, postContent)
 	} else if len(postContent) == 0 {
 		// if postContent is empty, this is a repost
-		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, reposted_id) VALUES ($1, $2)",
-			username, repostedId)
+		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, reposted_id) VALUES ($1, $2, $3)",
+			postId.String(), username, repostedId)
 	} else {
 		// otherwise, this is a quoted-repost
-		_, err = conn.Exec(context.Background(), "INSERT INTO posts (username, content, reposted_id) VALUES ($1, $2, $3)",
-			username, postContent, repostedId)
+		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content, reposted_id) VALUES ($1, $2, $3, $4)",
+			postId.String(), username, postContent, repostedId)
 	}
 
 	if err != nil {

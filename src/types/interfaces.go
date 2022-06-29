@@ -24,17 +24,17 @@ type PosterrUser struct {
 }
 
 type PosterrContent struct {
-	ID         int       `json:"post_id,omitempty"`
+	ID         string    `json:"post_id,omitempty"`
 	Username   string    `json:"username"`
 	Content    string    `json:"content,omitempty"`
-	RepostedId int       `json:"reposted_id,omitempty"`
+	RepostedId string    `json:"reposted_id,omitempty"`
 	CreatedAt  time.Time `json:"created_at,omitempty"`
 }
 
 type Posterr interface {
 	ListHomePagePosts(username string, offset int, toggle PostsListToggle) ([]PosterrContent, error)
 	ListProfilePosts(username string, offset int) ([]PosterrContent, error)
-	WritePost(username, postContent string, repostedId int) error
+	WritePost(username, postContent, repostedId string) error
 }
 
 type Users interface {
