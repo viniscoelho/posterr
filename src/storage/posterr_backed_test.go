@@ -14,7 +14,7 @@ const maxContentSize = 777
 func TestWritePost(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -49,7 +49,7 @@ func TestWritePost(t *testing.T) {
 func TestTooManyPostsInASingleDay(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -78,7 +78,7 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 func TestRepost(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -114,7 +114,7 @@ func TestRepost(t *testing.T) {
 func TestQuotedRepost(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()

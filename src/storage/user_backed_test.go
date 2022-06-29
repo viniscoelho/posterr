@@ -1,9 +1,7 @@
 package storage
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"sync"
 	"testing"
 
@@ -18,7 +16,7 @@ const maxUsernameLength = 14
 func TestUserCreation(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -52,7 +50,7 @@ func TestUserCreation(t *testing.T) {
 func TestFollowUser(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -113,7 +111,7 @@ func TestFollowUser(t *testing.T) {
 func TestUnfollowUser(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -182,7 +180,7 @@ func TestUnfollowUser(t *testing.T) {
 func TestIsFollowingUser(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -218,7 +216,7 @@ func TestIsFollowingUser(t *testing.T) {
 func TestCountUserPosts(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -255,7 +253,7 @@ func TestCountUserPosts(t *testing.T) {
 func TestUserFollowers(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -286,7 +284,7 @@ func TestUserFollowers(t *testing.T) {
 func TestUserFollowing(t *testing.T) {
 	assert := assertions.New(t)
 	rs := typesrand.NewPseudoRandomString()
-	dbName := rs.GenerateAny(8)
+	dbName := generateDBName()
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -312,23 +310,4 @@ func TestUserFollowing(t *testing.T) {
 	count, err := users.CountUserFollowing(usernames[0])
 	assert.NoError(err)
 	assert.Equal(noUsers-1, count)
-}
-
-func dropDatabase(dbName string) {
-	db := storagedb.NewDatabase("")
-
-	conn, err := db.Connect()
-	if err != nil {
-		log.Printf("Failed to connect to database: %s", err)
-		return
-	}
-	defer conn.Close()
-
-	_, err = conn.Exec(context.Background(), fmt.Sprintf(`DROP DATABASE IF EXISTS %s`, dbName))
-	if err != nil {
-		log.Printf("Failed to drop database %s: %s", dbName, err)
-		return
-	}
-
-	log.Printf("Database %s dropped!", dbName)
 }
