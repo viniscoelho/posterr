@@ -17,7 +17,8 @@ const maxUsernameLength = 14
 
 func TestUserCreation(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -26,7 +27,6 @@ func TestUserCreation(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	t.Run("Many random names", func(t *testing.T) {
 		for count := 0; count < 100; count++ {
@@ -51,7 +51,8 @@ func TestUserCreation(t *testing.T) {
 
 func TestFollowUser(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -60,7 +61,6 @@ func TestFollowUser(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	t.Run("Parallel follows", func(t *testing.T) {
 		// TODO: test fails for too many connections
@@ -112,7 +112,8 @@ func TestFollowUser(t *testing.T) {
 
 func TestUnfollowUser(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -121,7 +122,6 @@ func TestUnfollowUser(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	t.Run("Parallel unfollows", func(t *testing.T) {
 		// TODO: test fails for too many connections
@@ -181,7 +181,8 @@ func TestUnfollowUser(t *testing.T) {
 
 func TestIsFollowingUser(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -190,7 +191,6 @@ func TestIsFollowingUser(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	userA := rs.GenerateUnique(maxUsernameLength)
 	userB := rs.GenerateUnique(maxUsernameLength)
@@ -217,7 +217,8 @@ func TestIsFollowingUser(t *testing.T) {
 
 func TestCountUserPosts(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -226,7 +227,6 @@ func TestCountUserPosts(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -250,6 +250,68 @@ func TestCountUserPosts(t *testing.T) {
 		assert.NoError(err)
 		assert.Empty(count)
 	})
+}
+
+func TestUserFollowers(t *testing.T) {
+	assert := assertions.New(t)
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
+
+	db := storagedb.NewDatabase(dbName)
+	err := db.InitializeDB()
+	defer dropDatabase(dbName)
+	assert.NoError(err)
+
+	posts := NewPosterrBacked(db)
+	users := NewUserBacked(db, posts)
+
+	noUsers := 10
+	usernames := make([]string, noUsers, noUsers)
+	for i := 0; i < noUsers; i++ {
+		usernames[i] = rs.GenerateUnique(maxUsernameLength)
+		err = users.CreateUser(usernames[i])
+		assert.NoError(err)
+	}
+
+	for a := 0; a < noUsers-1; a++ {
+		err := users.FollowUser(usernames[0], usernames[a+1])
+		assert.NoError(err)
+	}
+
+	count, err := users.CountUserFollowers(usernames[0])
+	assert.NoError(err)
+	assert.Equal(noUsers-1, count)
+}
+
+func TestUserFollowing(t *testing.T) {
+	assert := assertions.New(t)
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
+
+	db := storagedb.NewDatabase(dbName)
+	err := db.InitializeDB()
+	defer dropDatabase(dbName)
+	assert.NoError(err)
+
+	posts := NewPosterrBacked(db)
+	users := NewUserBacked(db, posts)
+
+	noUsers := 10
+	usernames := make([]string, noUsers, noUsers)
+	for i := 0; i < noUsers; i++ {
+		usernames[i] = rs.GenerateUnique(maxUsernameLength)
+		err = users.CreateUser(usernames[i])
+		assert.NoError(err)
+	}
+
+	for a := 0; a < noUsers-1; a++ {
+		err := users.FollowUser(usernames[a+1], usernames[0])
+		assert.NoError(err)
+	}
+
+	count, err := users.CountUserFollowing(usernames[0])
+	assert.NoError(err)
+	assert.Equal(noUsers-1, count)
 }
 
 func dropDatabase(dbName string) {

@@ -13,7 +13,8 @@ const maxContentSize = 777
 
 func TestWritePost(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -22,7 +23,6 @@ func TestWritePost(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -48,7 +48,8 @@ func TestWritePost(t *testing.T) {
 
 func TestTooManyPostsInASingleDay(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -57,7 +58,6 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -77,7 +77,8 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 
 func TestRepost(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -86,7 +87,6 @@ func TestRepost(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -113,7 +113,8 @@ func TestRepost(t *testing.T) {
 
 func TestQuotedRepost(t *testing.T) {
 	assert := assertions.New(t)
-	dbName := "dummy"
+	rs := typesrand.NewPseudoRandomString()
+	dbName := rs.GenerateAny(8)
 
 	db := storagedb.NewDatabase(dbName)
 	err := db.InitializeDB()
@@ -122,7 +123,6 @@ func TestQuotedRepost(t *testing.T) {
 
 	posts := NewPosterrBacked(db)
 	users := NewUserBacked(db, posts)
-	rs := typesrand.NewPseudoRandomString()
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
