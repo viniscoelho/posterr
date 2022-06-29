@@ -28,18 +28,18 @@ func TestWritePost(t *testing.T) {
 	err = users.CreateUser(username)
 	assert.NoError(err)
 
-	t.Run("Empty content", func(t *testing.T) {
+	t.Run("Should fail for empty content", func(t *testing.T) {
 		_, err = posts.WritePost(username, "", "")
 		assert.Error(err)
 	})
 
-	t.Run("Content just right", func(t *testing.T) {
+	t.Run("Should post if content is just right", func(t *testing.T) {
 		content := rs.GenerateAny(maxContentSize)
 		_, err = posts.WritePost(username, content, "")
 		assert.NoError(err)
 	})
 
-	t.Run("Content too long", func(t *testing.T) {
+	t.Run("Should not post if content is too long", func(t *testing.T) {
 		content := rs.GenerateAny(maxContentSize + 1)
 		_, err = posts.WritePost(username, content, "")
 		assert.Error(err)
@@ -63,7 +63,8 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 	err = users.CreateUser(username)
 	assert.NoError(err)
 
-	for i := 0; i < 5; i++ {
+	noPosts := 5
+	for i := 0; i < noPosts; i++ {
 		content := rs.GenerateAny(maxContentSize)
 		_, err = posts.WritePost(username, content, "")
 		assert.NoError(err)
@@ -74,4 +75,74 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 	assert.Error(err)
 }
 
-// TODO: might be necessary to update write post to return the id of the post
+func TestRepost(t *testing.T) {
+	assert := assertions.New(t)
+	dbName := "dummy"
+
+	db := storagedb.NewDatabase(dbName)
+	err := db.InitializeDB()
+	defer dropDatabase(dbName)
+	assert.NoError(err)
+
+	posts := NewPosterrBacked(db)
+	users := NewUserBacked(db, posts)
+	rs := typesrand.NewPseudoRandomString()
+
+	username := rs.GenerateUnique(14)
+	err = users.CreateUser(username)
+	assert.NoError(err)
+
+	t.Run("Should repost an existing post", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize)
+		postId, err := posts.WritePost(username, content, "")
+		assert.NoError(err)
+
+		_, err = posts.WritePost(username, "", postId)
+		assert.NoError(err)
+	})
+
+	t.Run("Should not repost an non existing post", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize)
+		_, err := posts.WritePost(username, content, "")
+		assert.NoError(err)
+
+		_, err = posts.WritePost(username, "", "somePostId")
+		assert.Error(err)
+	})
+}
+
+func TestQuotedRepost(t *testing.T) {
+	assert := assertions.New(t)
+	dbName := "dummy"
+
+	db := storagedb.NewDatabase(dbName)
+	err := db.InitializeDB()
+	defer dropDatabase(dbName)
+	assert.NoError(err)
+
+	posts := NewPosterrBacked(db)
+	users := NewUserBacked(db, posts)
+	rs := typesrand.NewPseudoRandomString()
+
+	username := rs.GenerateUnique(14)
+	err = users.CreateUser(username)
+	assert.NoError(err)
+
+	t.Run("Should quote repost an existing post", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize)
+		postId, err := posts.WritePost(username, content, "")
+		assert.NoError(err)
+
+		_, err = posts.WritePost(username, "check this out", postId)
+		assert.NoError(err)
+	})
+
+	t.Run("Should not quote repost an non existing post", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize)
+		_, err := posts.WritePost(username, content, "")
+		assert.NoError(err)
+
+		_, err = posts.WritePost(username, "check this out", "somePostId")
+		assert.Error(err)
+	})
+}

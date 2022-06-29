@@ -179,6 +179,79 @@ func TestUnfollowUser(t *testing.T) {
 	})
 }
 
+func TestIsFollowingUser(t *testing.T) {
+	assert := assertions.New(t)
+	dbName := "dummy"
+
+	db := storagedb.NewDatabase(dbName)
+	err := db.InitializeDB()
+	defer dropDatabase(dbName)
+	assert.NoError(err)
+
+	posts := NewPosterrBacked(db)
+	users := NewUserBacked(db, posts)
+	rs := typesrand.NewPseudoRandomString()
+
+	userA := rs.GenerateUnique(maxUsernameLength)
+	userB := rs.GenerateUnique(maxUsernameLength)
+	err = users.CreateUser(userA)
+	assert.NoError(err)
+	err = users.CreateUser(userB)
+	assert.NoError(err)
+
+	err = users.FollowUser(userA, userB)
+	assert.NoError(err)
+
+	t.Run("Should be true if userA follows userB", func(t *testing.T) {
+		value, err := users.IsFollowingUser(userA, userB)
+		assert.NoError(err)
+		assert.True(value)
+	})
+
+	t.Run("Should be false if userB does not follow userA", func(t *testing.T) {
+		value, err := users.IsFollowingUser(userB, userA)
+		assert.NoError(err)
+		assert.False(value)
+	})
+}
+
+func TestCountUserPosts(t *testing.T) {
+	assert := assertions.New(t)
+	dbName := "dummy"
+
+	db := storagedb.NewDatabase(dbName)
+	err := db.InitializeDB()
+	defer dropDatabase(dbName)
+	assert.NoError(err)
+
+	posts := NewPosterrBacked(db)
+	users := NewUserBacked(db, posts)
+	rs := typesrand.NewPseudoRandomString()
+
+	username := rs.GenerateUnique(14)
+	err = users.CreateUser(username)
+	assert.NoError(err)
+
+	noPosts := 4
+	for i := 0; i < noPosts; i++ {
+		content := rs.GenerateAny(maxContentSize)
+		_, err = posts.WritePost(username, content, "")
+		assert.NoError(err)
+	}
+
+	t.Run("Should match no. of posts for a username", func(t *testing.T) {
+		count, err := users.CountUserPosts(username)
+		assert.NoError(err)
+		assert.Equal(noPosts, count)
+	})
+
+	t.Run("Should be empty if user does not have posts", func(t *testing.T) {
+		count, err := users.CountUserPosts("noSuchUser")
+		assert.NoError(err)
+		assert.Empty(count)
+	})
+}
+
 func dropDatabase(dbName string) {
 	db := storagedb.NewDatabase("")
 
