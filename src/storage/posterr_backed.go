@@ -118,45 +118,45 @@ func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.
 	return posts, nil
 }
 
-// WritePost creates a posts for a given username
-func (pb *posterrBacked) WritePost(username, postContent, repostedId string) error {
+// WritePost creates a post for a given username and returns the postId
+func (pb *posterrBacked) WritePost(username, postContent, repostedId string) (string, error) {
 	if len(postContent) == 0 && len(repostedId) == 0 {
-		return fmt.Errorf("either content or reposted_id should have a value")
+		return "", fmt.Errorf("either content or reposted_id should have a value")
 	}
 
 	conn, err := pb.db.Connect()
 	if err != nil {
-		return fmt.Errorf("could not connect to database: %w", err)
+		return "", fmt.Errorf("could not connect to database: %w", err)
 	}
 	defer conn.Close()
 
 	dailyPosts, err := pb.countDailyPosts(username)
 	if err != nil {
-		return fmt.Errorf("could not count daily posts: %w", err)
+		return "", fmt.Errorf("could not count daily posts: %w", err)
 	}
 
-	postId := uuid.New()
+	postId := uuid.New().String()
 	if dailyPosts >= maxDailyPosts {
-		return fmt.Errorf("exceeded maximum daily posts")
+		return "", fmt.Errorf("exceeded maximum daily posts")
 	} else if len(repostedId) == 0 {
 		// if repostedId is empty, this is a regular post
 		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content) VALUES ($1, $2, $3)",
-			postId.String(), username, postContent)
+			postId, username, postContent)
 	} else if len(postContent) == 0 {
 		// if postContent is empty, this is a repost
 		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, reposted_id) VALUES ($1, $2, $3)",
-			postId.String(), username, repostedId)
+			postId, username, repostedId)
 	} else {
 		// otherwise, this is a quoted-repost
 		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content, reposted_id) VALUES ($1, $2, $3, $4)",
-			postId.String(), username, postContent, repostedId)
+			postId, username, postContent, repostedId)
 	}
 
 	if err != nil {
-		return fmt.Errorf("could not insert into posts: %w", err)
+		return "", fmt.Errorf("could not insert into posts: %w", err)
 	}
 
-	return nil
+	return postId, nil
 }
 
 // countDailyPosts returns how many posts where made in a single day

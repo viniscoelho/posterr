@@ -34,7 +34,7 @@ type PosterrContent struct {
 type Posterr interface {
 	ListHomePagePosts(username string, offset int, toggle PostsListToggle) ([]PosterrContent, error)
 	ListProfilePosts(username string, offset int) ([]PosterrContent, error)
-	WritePost(username, postContent, repostedId string) error
+	WritePost(username, postContent, repostedId string) (string, error)
 }
 
 type Users interface {

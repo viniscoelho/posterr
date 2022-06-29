@@ -29,19 +29,19 @@ func TestWritePost(t *testing.T) {
 	assert.NoError(err)
 
 	t.Run("Empty content", func(t *testing.T) {
-		err = posts.WritePost(username, "", "")
+		_, err = posts.WritePost(username, "", "")
 		assert.Error(err)
 	})
 
 	t.Run("Content just right", func(t *testing.T) {
 		content := rs.GenerateAny(maxContentSize)
-		err = posts.WritePost(username, content, "")
+		_, err = posts.WritePost(username, content, "")
 		assert.NoError(err)
 	})
 
 	t.Run("Content too long", func(t *testing.T) {
 		content := rs.GenerateAny(maxContentSize + 1)
-		err = posts.WritePost(username, content, "")
+		_, err = posts.WritePost(username, content, "")
 		assert.Error(err)
 	})
 }
@@ -65,12 +65,12 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		content := rs.GenerateAny(maxContentSize)
-		err = posts.WritePost(username, content, "")
+		_, err = posts.WritePost(username, content, "")
 		assert.NoError(err)
 	}
 
 	content := rs.GenerateAny(maxContentSize)
-	err = posts.WritePost(username, content, "")
+	_, err = posts.WritePost(username, content, "")
 	assert.Error(err)
 }
 
