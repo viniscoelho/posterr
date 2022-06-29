@@ -144,9 +144,10 @@ func createPostsTable(conn *pgxpool.Pool) error {
 	table := `CREATE TABLE posts(
         post_id VARCHAR (36) PRIMARY KEY,
         username VARCHAR (14) NOT NULL REFERENCES users (username),
-        content VARCHAR (777),
-        reposted_id VARCHAR (36),
-        created_at TIMESTAMPTZ DEFAULT NOW())`
+        content VARCHAR (777) NULL,
+        reposted_id VARCHAR (36) NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        FOREIGN KEY (reposted_id) REFERENCES posts (post_id))`
 
 	_, err := conn.Exec(context.Background(), table)
 	if err != nil {

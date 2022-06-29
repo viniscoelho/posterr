@@ -279,7 +279,8 @@ func (ub *userBacked) UnfollowUser(userA, userB string) error {
 	return nil
 }
 
-// IsFollowingUser checks if userA is following userB
+// IsFollowingUser checks if userA is followed by userB,
+// i.e., userB follows userA
 func (ub *userBacked) IsFollowingUser(userA, userB string) (bool, error) {
 	conn, err := ub.db.Connect()
 	if err != nil {
