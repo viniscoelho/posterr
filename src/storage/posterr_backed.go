@@ -14,13 +14,13 @@ import (
 const (
 	maxDailyPosts = 5
 
-	selectAllPosts = `SELECT *
+	selectAllPosts = `SELECT post_id, username, COALESCE(content, ''), COALESCE(reposted_id, ''), created_at
                  FROM posts
                  ORDER BY created_at DESC
                  LIMIT 10
                  OFFSET $1`
 
-	selectFollowingPosts = `SELECT *
+	selectFollowingPosts = `SELECT post_id, username, COALESCE(content, ''), COALESCE(reposted_id, ''), created_at
                  FROM posts
                  WHERE username IN (
                      SELECT followed_by
@@ -30,7 +30,7 @@ const (
                  LIMIT 10
                  OFFSET $2`
 
-	selectProfilePosts = `SELECT *
+	selectProfilePosts = `SELECT post_id, username, COALESCE(content, ''), COALESCE(reposted_id, ''), created_at
                  FROM posts
                  WHERE username = $1
                  ORDER BY created_at DESC
