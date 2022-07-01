@@ -3,9 +3,7 @@ package content
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"posterr/src/storage"
 	"posterr/src/types"
@@ -26,41 +24,25 @@ func NewListHomeContentHandler(posts types.Posterr) *listHomeContent {
 }
 
 func (h *listHomeContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	offsetStr := r.FormValue("offset")
+	username := r.FormValue("username")
+	offsetQuery := r.FormValue("offset")
+	toggleQuery := r.FormValue("toggle")
 
-	var err error
-	var offset int
-	if len(offsetStr) != 0 {
-		offset, err = strconv.Atoi(offsetStr)
-		if err != nil {
-			h.logger.Errorf("Error parsing offset: %s", err)
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("internal server error"))
-
-			return
-		}
-	}
-
-	body, err := ioutil.ReadAll(r.Body)
+	offset, err := parseIntQueryParam(offsetQuery)
 	if err != nil {
-		h.logger.Errorf("Request failed: %s", err)
+		h.logger.Errorf("Error parsing limit: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
-
-		return
 	}
 
-	dto := HomePageContentDTO{}
-	err = json.Unmarshal(body, &dto)
+	toggle, err := parseIntQueryParam(toggleQuery)
 	if err != nil {
-		h.logger.Errorf("Request failed: %s", err)
+		h.logger.Errorf("Error parsing limit: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
-
-		return
 	}
 
-	posts, err := h.posts.ListHomePageContent(dto.Username, offset, dto.Toggle)
+	posts, err := h.posts.ListHomePageContent(username, offset, types.PostsListToggle(toggle))
 	if err != nil {
 		switch err.(type) {
 		case storage.InvalidToggleError:

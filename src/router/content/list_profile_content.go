@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"posterr/src/types"
 
@@ -27,19 +26,13 @@ func NewListProfileContentHandler(posts types.Posterr) *listProfileContent {
 func (h *listProfileContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
-	offsetStr := r.FormValue("offset")
+	offsetQuery := r.FormValue("offset")
 
-	var err error
-	var offset int
-	if len(offsetStr) != 0 {
-		offset, err = strconv.Atoi(offsetStr)
-		if err != nil {
-			h.logger.Errorf("Error parsing offset: %s", err)
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("internal server error"))
-
-			return
-		}
+	offset, err := parseIntQueryParam(offsetQuery)
+	if err != nil {
+		h.logger.Errorf("Error parsing limit: %s", err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("internal server error"))
 	}
 
 	profilePosts, err := h.posts.ListProfileContent(username, offset)

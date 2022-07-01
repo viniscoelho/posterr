@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"posterr/src/types"
 
@@ -28,7 +27,7 @@ func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	limitQuery := r.FormValue("limit")
 	offsetQuery := r.FormValue("offset")
 
-	limit, err := h.parseIntQueryParams(limitQuery)
+	limit, err := parseIntQueryParam(limitQuery)
 	if err != nil {
 		h.logger.Errorf("Error parsing limit: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -37,7 +36,7 @@ func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	offset, err := h.parseIntQueryParams(offsetQuery)
+	offset, err := parseIntQueryParam(offsetQuery)
 	if err != nil {
 		h.logger.Errorf("Error parsing offset: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -66,11 +65,4 @@ func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.Write(postsBytes)
-}
-
-func (h searchContent) parseIntQueryParams(paramStr string) (int, error) {
-	if len(paramStr) != 0 {
-		return strconv.Atoi(paramStr)
-	}
-	return 0, nil
 }
