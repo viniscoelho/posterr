@@ -69,7 +69,7 @@ func (h *listHomeContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
 		h.logger.Errorf("Request failed: %s", err)
-		message := fmt.Sprintf("could not complete follow/unfollow operation: %s", err.Error())
+		message := fmt.Sprintf("could not complete list home page content operation: %s", err.Error())
 		rw.Write([]byte(message))
 
 		return
