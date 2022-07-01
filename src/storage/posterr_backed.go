@@ -41,6 +41,13 @@ const (
                  FROM posts
                  WHERE username = $1
                  AND date_trunc('day', created_at) = date_trunc('day', NOW())`
+
+	searchPosts = `SELECT post_id, username, COALESCE(content, ''), COALESCE(reposted_id, ''), created_at
+                 FROM posts
+                 WHERE content LIKE '%$1%'
+                 ORDER BY created_at DESC
+                 LIMIT $2
+                 OFFSET $3`
 )
 
 type posterrBacked struct {
@@ -112,6 +119,33 @@ func (pb *posterrBacked) ListProfileContent(username string, offset int) ([]type
 		postContent := types.PosterrContent{}
 		if err = rows.Scan(&postContent.ID, &postContent.Username, &postContent.Content, &postContent.RepostedId, &postContent.CreatedAt); err != nil {
 			return nil, fmt.Errorf("could not scan selectProfilePosts rows: %w", err)
+		}
+
+		posts = append(posts, postContent)
+	}
+
+	return posts, nil
+}
+
+// SearchContent returns a lists of posts matching a substring criteria.
+// The number of returned posts can be specified by the providing a limit.
+func (pb *posterrBacked) SearchContent(content string, limit, offset int) ([]types.PosterrContent, error) {
+	conn, err := pb.db.Connect()
+	if err != nil {
+		return nil, fmt.Errorf("could not connect to database: %w", err)
+	}
+	defer conn.Close()
+
+	rows, err := conn.Query(context.Background(), searchPosts, content, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("could not perform searchPosts query: %w", err)
+	}
+
+	posts := make([]types.PosterrContent, 0)
+	for rows.Next() {
+		postContent := types.PosterrContent{}
+		if err = rows.Scan(&postContent.ID, &postContent.Username, &postContent.Content, &postContent.RepostedId, &postContent.CreatedAt); err != nil {
+			return nil, fmt.Errorf("could not scan searchPosts rows: %w", err)
 		}
 
 		posts = append(posts, postContent)

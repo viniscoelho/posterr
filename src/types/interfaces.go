@@ -31,6 +31,7 @@ type PosterrContent struct {
 type Posterr interface {
 	ListHomePageContent(username string, offset int, toggle PostsListToggle) ([]PosterrContent, error)
 	ListProfileContent(username string, offset int) ([]PosterrContent, error)
+	SearchContent(content string, limit, offset int) ([]PosterrContent, error)
 	WriteContent(username, postContent, repostedId string) (string, error)
 }
 
