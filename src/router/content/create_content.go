@@ -4,25 +4,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"posterr/src/storage"
 	"posterr/src/types"
+
+	"github.com/sirupsen/logrus"
 )
 
 type createContent struct {
-	posts types.Posterr
+	posts  types.Posterr
+	logger *logrus.Entry
 }
 
 func NewCreateContentHandler(posts types.Posterr) *createContent {
-	return &createContent{posts}
+	return &createContent{
+		posts:  posts,
+		logger: logrus.WithFields(logrus.Fields{"routes": "CreateContent"}),
+	}
 }
 
 func (h *createContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("Error: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -32,7 +37,7 @@ func (h *createContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	dto := PostContentDTO{}
 	err = json.Unmarshal(body, &dto)
 	if err != nil {
-		log.Printf("CreateContentHandler request failed: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -47,7 +52,7 @@ func (h *createContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
-		log.Printf("CreateContentHandler request failed: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		message := fmt.Sprintf("could not complete write content operation: %s", err.Error())
 		rw.Write([]byte(message))
 

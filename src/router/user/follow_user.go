@@ -4,27 +4,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"posterr/src/storage"
 	"posterr/src/types"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type followUser struct {
-	users types.Users
+	users  types.Users
+	logger *logrus.Entry
 }
 
 func NewFollowUserHandler(users types.Users) *followUser {
-	return &followUser{users}
+	return &followUser{
+		users:  users,
+		logger: logrus.WithFields(logrus.Fields{"routes": "FollowUser"}),
+	}
 }
 
 func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("FollowUserHandler request failed: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -34,7 +38,7 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	dto := FollowDTO{}
 	err = json.Unmarshal(body, &dto)
 	if err != nil {
-		log.Printf("FollowUserHandler request failed: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -49,6 +53,8 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		err = h.users.FollowUser(username, dto.Username)
 	case Unfollow:
 		err = h.users.UnfollowUser(username, dto.Username)
+	default:
+		err = InvalidToggleError{}
 	}
 	if err != nil {
 		switch err.(type) {
@@ -57,7 +63,7 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
-		log.Printf("FollowUserHandler request failed: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		message := fmt.Sprintf("could not complete follow/unfollow operation: %s", err.Error())
 		rw.Write([]byte(message))
 

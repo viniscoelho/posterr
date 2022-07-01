@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	storagedb "posterr/src/storage/db"
 
 	"github.com/rs/cors"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -25,7 +25,7 @@ func main() {
 	db := storagedb.NewDatabase(storagedb.DatabaseName)
 	if *initDB {
 		if err := db.InitializeDB(); err != nil {
-			log.Fatalf("An error occurred: %s", err)
+			logrus.Fatalf("An error occurred: %s", err)
 		}
 	}
 
@@ -52,5 +52,5 @@ func main() {
 		Addr:         fmt.Sprintf(":%d", *port),
 		IdleTimeout:  time.Second * 60,
 	}
-	log.Fatal(s.ListenAndServe())
+	logrus.Fatal(s.ListenAndServe())
 }

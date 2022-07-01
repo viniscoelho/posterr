@@ -2,21 +2,25 @@ package user
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
 	"posterr/src/types"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type readUser struct {
-	users types.Users
+	users  types.Users
+	logger *logrus.Entry
 }
 
 func NewReadUserHandler(users types.Users) *readUser {
-	return &readUser{users}
+	return &readUser{
+		users:  users,
+		logger: logrus.WithFields(logrus.Fields{"routes": "ReadUser"}),
+	}
 }
 
 func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
@@ -29,7 +33,7 @@ func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if len(offsetStr) != 0 {
 		offset, err = strconv.Atoi(offsetStr)
 		if err != nil {
-			log.Printf("Error parsing offset: %s", err)
+			h.logger.Errorf("Error parsing offset: %s", err)
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte("internal server error"))
 
@@ -39,7 +43,7 @@ func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	user, err := h.users.GetUserProfile(username, offset)
 	if err != nil {
-		log.Printf("ReadUserHandler request failed: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -48,7 +52,7 @@ func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	userBytes, err := json.Marshal(user)
 	if err != nil {
-		log.Printf("ReadUserHandler request failed: %s", err)
+		h.logger.Errorf("Request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 

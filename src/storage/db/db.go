@@ -3,11 +3,11 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/sirupsen/logrus"
 )
 
 /*
@@ -55,7 +55,7 @@ func (pg *postgresDB) InitializeDB() error {
 		if !databaseExists(err) {
 			return fmt.Errorf("database creation failed: %w", err)
 		}
-		log.Print("Database already exists. Skipping...")
+		logrus.Warn("Database already exists. Skipping...")
 	}
 
 	return pg.createTables()
@@ -73,21 +73,21 @@ func (pg *postgresDB) createTables() error {
 		if !tableExists(err) {
 			return fmt.Errorf("table users creation failed: %w", err)
 		}
-		log.Print("Table users already exists. Skipping...")
+		logrus.Warn("Table users already exists. Skipping...")
 	}
 
 	if err := createPostsTable(conn); err != nil {
 		if !tableExists(err) {
 			return fmt.Errorf("table posts creation failed: %w", err)
 		}
-		log.Print("Table posts already exists. Skipping...")
+		logrus.Warn("Table posts already exists. Skipping...")
 	}
 
 	if err := createFollowersTable(conn); err != nil {
 		if !tableExists(err) {
 			return fmt.Errorf("table followers creation failed: %s", err)
 		}
-		log.Print("Table followers already exists. Skipping...")
+		logrus.Warn("Table followers already exists. Skipping...")
 	}
 
 	return nil
@@ -119,7 +119,7 @@ func createDatabase(dbName string) error {
 		return err
 	}
 
-	log.Printf("Database %s created!", dbName)
+	logrus.Infof("Database %s created!", dbName)
 	return nil
 }
 
@@ -133,7 +133,7 @@ func createUsersTable(conn *pgxpool.Pool) error {
 		return err
 	}
 
-	log.Printf("Table users created!")
+	logrus.Info("Table users created!")
 	return nil
 }
 
@@ -154,7 +154,7 @@ func createPostsTable(conn *pgxpool.Pool) error {
 		return err
 	}
 
-	log.Printf("Table posts created!")
+	logrus.Info("Table posts created!")
 	return nil
 }
 
@@ -171,7 +171,7 @@ func createFollowersTable(conn *pgxpool.Pool) error {
 		return err
 	}
 
-	log.Printf("Table followers created!")
+	logrus.Info("Table followers created!")
 	return nil
 }
 

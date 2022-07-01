@@ -122,7 +122,7 @@ func (ub *userBacked) CountUserPosts(username string) (int, error) {
 
 	rows, err := conn.Query(context.Background(), countUserPosts, username)
 	if err != nil {
-		return 0, fmt.Errorf("could not perform query: %w", err)
+		return 0, fmt.Errorf("could not perform countUserPosts query: %w", err)
 	}
 
 	var dailyPosts int
@@ -156,7 +156,7 @@ func (ub *userBacked) CountUserFollowers(username string) (int, error) {
 
 	rows, err := conn.Query(context.Background(), countFollowers, username)
 	if err != nil {
-		return 0, fmt.Errorf("could not perform query: %w", err)
+		return 0, fmt.Errorf("could not perform countFollowers query: %w", err)
 	}
 
 	var followers int
@@ -196,7 +196,7 @@ func (ub *userBacked) CountUserFollowing(username string) (int, error) {
 
 	rows, err := conn.Query(context.Background(), countFollowing, username)
 	if err != nil {
-		return 0, fmt.Errorf("could not perform query: %w", err)
+		return 0, fmt.Errorf("could not perform countFollowing query: %w", err)
 	}
 
 	var following int
@@ -230,7 +230,7 @@ func (ub *userBacked) FollowUser(username, follower string) error {
 
 	isFollowingUser, err := ub.IsFollowingUser(username, follower)
 	if err != nil {
-		return fmt.Errorf("could not check activity: %w", err)
+		return fmt.Errorf("could not check follower: %w", err)
 	}
 
 	if isFollowingUser {
@@ -262,7 +262,7 @@ func (ub *userBacked) UnfollowUser(username, follower string) error {
 
 	isFollowingUser, err := ub.IsFollowingUser(username, follower)
 	if err != nil {
-		return fmt.Errorf("could not check activity: %w", err)
+		return fmt.Errorf("could not check follower: %w", err)
 	}
 
 	if !isFollowingUser {
@@ -282,6 +282,7 @@ func (ub *userBacked) UnfollowUser(username, follower string) error {
 // IsFollowingUser checks if username is followed by follower,
 // i.e., follower follows username
 func (ub *userBacked) IsFollowingUser(username, follower string) (bool, error) {
+	// TODO: this could be cached as well
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return false, fmt.Errorf("could not connect to database: %w", err)
@@ -290,7 +291,7 @@ func (ub *userBacked) IsFollowingUser(username, follower string) (bool, error) {
 
 	rows, err := conn.Query(context.Background(), isFollowerOf, username, follower)
 	if err != nil {
-		return false, fmt.Errorf("could not perform query: %w", err)
+		return false, fmt.Errorf("could not perform isFollowerOf query: %w", err)
 	}
 
 	var countRows int
@@ -314,7 +315,7 @@ func (ub *userBacked) getUserDetails(username string) (types.PosterrUser, error)
 
 	rows, err := conn.Query(context.Background(), selectUser, username)
 	if err != nil {
-		return types.PosterrUser{}, fmt.Errorf("could not perform query: %w", err)
+		return types.PosterrUser{}, fmt.Errorf("could not perform selectUser query: %w", err)
 	}
 
 	var userProfile types.PosterrUser

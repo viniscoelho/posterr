@@ -25,3 +25,9 @@ type ExceededMaximumDailyPostsError struct{}
 func (e ExceededMaximumDailyPostsError) Error() string {
 	return "exceeded maximum daily posts"
 }
+
+type InvalidToggleError struct{}
+
+func (e InvalidToggleError) Error() string {
+	return "invalid toggle selected"
+}

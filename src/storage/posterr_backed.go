@@ -69,20 +69,22 @@ func (pb *posterrBacked) ListHomePageContent(username string, offset int, toggle
 	case types.All:
 		rows, err = conn.Query(context.Background(), selectAllPosts, offset)
 		if err != nil {
-			return nil, fmt.Errorf("could not perform query: %w", err)
+			return nil, fmt.Errorf("could not perform selectAllPosts query: %w", err)
 		}
 	case types.Following:
 		rows, err = conn.Query(context.Background(), selectFollowingPosts, username, offset)
 		if err != nil {
-			return nil, fmt.Errorf("could not perform query: %w", err)
+			return nil, fmt.Errorf("could not perform selectFollowingPosts query: %w", err)
 		}
+	default:
+		return nil, InvalidToggleError{}
 	}
 
 	posts := make([]types.PosterrContent, 0)
 	for rows.Next() {
 		postContent := types.PosterrContent{}
 		if err = rows.Scan(&postContent.ID, &postContent.Username, &postContent.Content, &postContent.RepostedId, &postContent.CreatedAt); err != nil {
-			return nil, fmt.Errorf("could not scan rows: %w", err)
+			return nil, fmt.Errorf("could not scan selectPosts rows: %w", err)
 		}
 
 		posts = append(posts, postContent)
@@ -102,14 +104,14 @@ func (pb *posterrBacked) ListProfileContent(username string, offset int) ([]type
 
 	rows, err := conn.Query(context.Background(), selectProfilePosts, username, offset)
 	if err != nil {
-		return nil, fmt.Errorf("could not perform query: %w", err)
+		return nil, fmt.Errorf("could not perform selectProfilePosts query: %w", err)
 	}
 
 	posts := make([]types.PosterrContent, 0)
 	for rows.Next() {
 		postContent := types.PosterrContent{}
 		if err = rows.Scan(&postContent.ID, &postContent.Username, &postContent.Content, &postContent.RepostedId, &postContent.CreatedAt); err != nil {
-			return nil, fmt.Errorf("could not scan rows: %w", err)
+			return nil, fmt.Errorf("could not scan selectProfilePosts rows: %w", err)
 		}
 
 		posts = append(posts, postContent)
@@ -137,7 +139,7 @@ func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) 
 
 	postId := uuid.New().String()
 	if dailyPosts >= maxDailyPosts {
-		return "", fmt.Errorf("exceeded maximum daily posts")
+		return "", ExceededMaximumDailyPostsError{}
 	} else if len(repostedId) == 0 {
 		// if repostedId is empty, this is a regular post
 		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content) VALUES ($1, $2, $3)",
@@ -169,13 +171,13 @@ func (pb *posterrBacked) countDailyPosts(username string) (int, error) {
 
 	rows, err := conn.Query(context.Background(), countDailyPosts, username)
 	if err != nil {
-		return 0, fmt.Errorf("could not perform query: %w", err)
+		return 0, fmt.Errorf("could not perform countDailyPosts query: %w", err)
 	}
 
 	var dailyPosts int
 	for rows.Next() {
 		if err = rows.Scan(&dailyPosts); err != nil {
-			return 0, fmt.Errorf("could not scan rows: %w", err)
+			return 0, fmt.Errorf("could not scan countDailyPosts rows: %w", err)
 		}
 	}
 
