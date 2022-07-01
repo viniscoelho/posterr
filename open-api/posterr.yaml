@@ -10,6 +10,34 @@ produces:
   - "application/json"
 paths:
   /posterr/content:
+    get:
+      summary: "Returns a list of posts matching a given substring."
+      parameters:
+        - in: query
+          name: "content"
+          type: "integer"
+          required: true
+          description: "Substring to be searched in each post"
+        - in: query
+          name: "limit"
+          type: "integer"
+          required: false
+          description: "Limit of returned pages. If not given, default set to 10"
+        - in: query
+          name: "offset"
+          type: "integer"
+          required: false
+          description: "Pagination offset"
+      description: >-
+        Returns an array containing a list of posts matching a given substring. The number of returned posts can be customized via limit query parameter. Pagination is supported by providing an offset query parameter.
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: >-
+            Returns a list of posts.
+          schema:
+            $ref: "#/definitions/Posterrs"
     post:
       summary: "Creates a post content."
       description: >-
@@ -36,12 +64,22 @@ paths:
       summary: "List home page posts."
       parameters:
         - in: query
+          name: "username"
+          type: "string"
+          required: false
+          description: "Username to filter post by. Required if toggle value is 1"
+        - in: query
           name: "offset"
           type: "integer"
           required: false
           description: "Pagination offset"
+        - in: query
+          name: "toggle"
+          type: "integer"
+          required: false
+          description: "Toggle view option. Requires username if toggle value is 1"
       description: >-
-        Returns an array containing a list of posts. The posts are divided by: **All** (from any user) and **Following** (only by the users a user follows) passed though the body via toggle: 0 for **All**, 1 for **Following**. Each request returns up to 10 posts. Pagination is supported by providing on offset query parameter.
+        Returns an array containing a list of posts. The posts are divided by: 0 (or **All**, from any user) and 1 (or **Following**, only by the users a user follows). Each request returns up to 10 posts. Pagination is supported by providing on offset query parameter.
       produces:
         - "application/json"
       responses:
@@ -68,7 +106,7 @@ paths:
           required: false
           description: "Pagination offset"
       description: >-
-        Returns an array containing a list of posts of a user. Each request returns up to 5 posts. Pagination is supported by providing on offset query parameter.
+        Returns an array containing a list of posts of a user. Each request returns up to 5 posts. Pagination is supported by providing an offset query parameter.
       produces:
         - "application/json"
       responses:
@@ -103,7 +141,7 @@ paths:
     post:
       summary: "Follows or unfollows a user."
       description: >-
-        Indicates whereas a user starts following or unfollowing another user. The target user is given in the path string and the follower user is passed through the body. To indicate which operation is targeted, a toggle should be provided through the body: 0 for **Follow**, 1 for **Unfollow**.
+        Indicates whereas a user starts following or unfollowing another user. The target user is given in the path string and the follower user is passed through the body. To indicate which operation is targeted, a toggle should be provided through the body: 0 for **Follow** and 1 for **Unfollow**.
       parameters:
         - in: path
           name: "username"
