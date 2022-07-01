@@ -24,7 +24,7 @@ func NewFollowUserHandler(users types.Users) *followUser {
 func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("FollowUserHandler failed: %s", err)
+		log.Printf("FollowUserHandler request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -34,7 +34,7 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	dto := FollowDTO{}
 	err = json.Unmarshal(body, &dto)
 	if err != nil {
-		log.Printf("FollowUserHandler failed: %s", err)
+		log.Printf("FollowUserHandler request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -57,7 +57,7 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)
 		}
-		log.Printf("FollowUserHandler failed: %s", err)
+		log.Printf("FollowUserHandler request failed: %s", err)
 		message := fmt.Sprintf("could not complete follow/unfollow operation: %s", err.Error())
 		rw.Write([]byte(message))
 

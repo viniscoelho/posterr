@@ -104,7 +104,7 @@ func (ub *userBacked) GetUserProfile(username string, offset int) (types.Posterr
 		return types.PosterrUser{}, err
 	}
 
-	userProfile.Posts, err = ub.posts.ListProfilePosts(username, offset)
+	userProfile.Posts, err = ub.posts.ListProfileContent(username, offset)
 	if err != nil {
 		return types.PosterrUser{}, err
 	}

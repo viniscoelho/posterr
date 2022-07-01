@@ -39,7 +39,7 @@ func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	user, err := h.users.GetUserProfile(username, offset)
 	if err != nil {
-		log.Printf("ReadUserHandler failed: %s", err)
+		log.Printf("ReadUserHandler request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 
@@ -48,7 +48,7 @@ func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	userBytes, err := json.Marshal(user)
 	if err != nil {
-		log.Printf("ReadUserHandler failed: %s", err)
+		log.Printf("ReadUserHandler request failed: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 

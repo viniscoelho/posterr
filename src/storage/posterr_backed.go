@@ -53,11 +53,11 @@ func NewPosterrBacked(db storagedb.ConnectDB) *posterrBacked {
 	}
 }
 
-// ListHomePagePosts returns a list of posts:
+// ListHomePageContent returns a list of posts:
 // - If the toggle is All, returns a list of posts from the whole database
 // - If the toggle is Following, returns a list of posts only from the users a given username follows
 // Each call returns 10 posts at most
-func (pb *posterrBacked) ListHomePagePosts(username string, offset int, toggle types.PostsListToggle) ([]types.PosterrContent, error) {
+func (pb *posterrBacked) ListHomePageContent(username string, offset int, toggle types.PostsListToggle) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
@@ -91,9 +91,9 @@ func (pb *posterrBacked) ListHomePagePosts(username string, offset int, toggle t
 	return posts, nil
 }
 
-// ListProfilePosts returns a lists of posts for a given username
+// ListProfileContent returns a lists of posts for a given username
 // Each call returns 5 posts at most
-func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.PosterrContent, error) {
+func (pb *posterrBacked) ListProfileContent(username string, offset int) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
@@ -118,8 +118,8 @@ func (pb *posterrBacked) ListProfilePosts(username string, offset int) ([]types.
 	return posts, nil
 }
 
-// WritePost creates a post for a given username and returns the postId
-func (pb *posterrBacked) WritePost(username, postContent, repostedId string) (string, error) {
+// WriteContent creates a post for a given username and returns the postId
+func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) (string, error) {
 	if len(postContent) == 0 && len(repostedId) == 0 {
 		return "", fmt.Errorf("either content or reposted_id should have a value")
 	}
