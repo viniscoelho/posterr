@@ -32,17 +32,10 @@ const (
                  WHERE username = $1 AND followed_by = $2`
 )
 
-type FollowUser struct {
-	Username string
-	Follows  bool
-}
-
 type userBacked struct {
 	sync.RWMutex
 	// An accessor to the database
 	db storagedb.ConnectDB
-	// An accessor to the Posterr interface
-	posts types.Posterr
 	// A cache map to store how many followers a user has
 	followersCount map[string]int
 	// A cache map to store how many users a user is following
@@ -51,11 +44,10 @@ type userBacked struct {
 	rgx *regexp.Regexp
 }
 
-func NewUserBacked(db storagedb.ConnectDB, posts types.Posterr) *userBacked {
+func NewUserBacked(db storagedb.ConnectDB) *userBacked {
 	// TODO: should the connection pool be reset for every call?
 	return &userBacked{
 		db:             db,
-		posts:          posts,
 		followersCount: make(map[string]int),
 		followingCount: make(map[string]int),
 		rgx:            regexp.MustCompile(`^[a-zA-Z0-9]*$`),
@@ -83,7 +75,7 @@ func (ub *userBacked) CreateUser(username string) error {
 }
 
 // GetUserProfile returns a user detailed information
-func (ub *userBacked) GetUserProfile(username string, offset int) (types.PosterrUser, error) {
+func (ub *userBacked) GetUserProfile(username string) (types.PosterrUser, error) {
 	userProfile, err := ub.getUserDetails(username)
 	if err != nil {
 		return types.PosterrUser{}, err
@@ -100,11 +92,6 @@ func (ub *userBacked) GetUserProfile(username string, offset int) (types.Posterr
 	}
 
 	userProfile.PostsCount, err = ub.CountUserPosts(username)
-	if err != nil {
-		return types.PosterrUser{}, err
-	}
-
-	userProfile.Posts, err = ub.posts.ListProfileContent(username, offset)
 	if err != nil {
 		return types.PosterrUser{}, err
 	}

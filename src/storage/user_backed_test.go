@@ -23,8 +23,7 @@ func TestUserCreation(t *testing.T) {
 	defer dropDatabase(dbName)
 	assert.NoError(err)
 
-	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	t.Run("Many random names", func(t *testing.T) {
 		for count := 0; count < 100; count++ {
@@ -57,8 +56,7 @@ func TestFollowUser(t *testing.T) {
 	defer dropDatabase(dbName)
 	assert.NoError(err)
 
-	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	t.Run("Parallel follows", func(t *testing.T) {
 		// TODO: test fails for too many connections
@@ -118,8 +116,7 @@ func TestUnfollowUser(t *testing.T) {
 	defer dropDatabase(dbName)
 	assert.NoError(err)
 
-	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	t.Run("Parallel unfollows", func(t *testing.T) {
 		// TODO: test fails for too many connections
@@ -187,8 +184,7 @@ func TestIsFollowingUser(t *testing.T) {
 	defer dropDatabase(dbName)
 	assert.NoError(err)
 
-	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	userA := rs.GenerateUnique(maxUsernameLength)
 	userB := rs.GenerateUnique(maxUsernameLength)
@@ -224,7 +220,7 @@ func TestCountUserPosts(t *testing.T) {
 	assert.NoError(err)
 
 	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -260,8 +256,7 @@ func TestUserFollowers(t *testing.T) {
 	defer dropDatabase(dbName)
 	assert.NoError(err)
 
-	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	noUsers := 10
 	usernames := make([]string, noUsers, noUsers)
@@ -291,8 +286,7 @@ func TestUserFollowing(t *testing.T) {
 	defer dropDatabase(dbName)
 	assert.NoError(err)
 
-	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	noUsers := 10
 	usernames := make([]string, noUsers, noUsers)

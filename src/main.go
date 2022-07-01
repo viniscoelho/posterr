@@ -30,7 +30,7 @@ func main() {
 	}
 
 	posts := storage.NewPosterrBacked(db)
-	users := storage.NewUserBacked(db, posts)
+	users := storage.NewUserBacked(db)
 
 	r := router.CreateRoutes(posts, users)
 	c := cors.New(cors.Options{

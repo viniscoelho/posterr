@@ -15,12 +15,11 @@ const (
 )
 
 type PosterrUser struct {
-	Username   string           `json:"username"`
-	Followers  int              `json:"followers"`
-	Following  int              `json:"following"`
-	PostsCount int              `json:"posts_count"`
-	Posts      []PosterrContent `json:"posts"`
-	JoinedAt   time.Time        `json:"joined_at"`
+	Username   string    `json:"username"`
+	Followers  int       `json:"followers"`
+	Following  int       `json:"following"`
+	PostsCount int       `json:"posts_count"`
+	JoinedAt   time.Time `json:"joined_at"`
 }
 
 type PosterrContent struct {
@@ -39,7 +38,7 @@ type Posterr interface {
 
 type Users interface {
 	CreateUser(username string) error
-	GetUserProfile(username string, offset int) (PosterrUser, error)
+	GetUserProfile(username string) (PosterrUser, error)
 	CountUserPosts(username string) (int, error)
 	CountUserFollowers(username string) (int, error)
 	CountUserFollowing(username string) (int, error)

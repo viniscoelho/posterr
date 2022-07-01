@@ -22,7 +22,7 @@ func TestWritePost(t *testing.T) {
 	assert.NoError(err)
 
 	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -57,7 +57,7 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 	assert.NoError(err)
 
 	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -86,7 +86,7 @@ func TestRepost(t *testing.T) {
 	assert.NoError(err)
 
 	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
@@ -122,7 +122,7 @@ func TestQuotedRepost(t *testing.T) {
 	assert.NoError(err)
 
 	posts := NewPosterrBacked(db)
-	users := NewUserBacked(db, posts)
+	users := NewUserBacked(db)
 
 	username := rs.GenerateUnique(14)
 	err = users.CreateUser(username)
