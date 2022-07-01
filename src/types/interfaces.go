@@ -3,8 +3,6 @@ package types
 
 import (
 	"time"
-
-	_ "github.com/golang/mock/mockgen/model"
 )
 
 type PostsListToggle int
