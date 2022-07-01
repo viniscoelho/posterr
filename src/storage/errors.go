@@ -19,3 +19,9 @@ type UserDoesNotFollowError struct {
 func (e UserDoesNotFollowError) Error() string {
 	return fmt.Sprintf("%s does not follow %s", e.follower, e.user)
 }
+
+type ExceededMaximumDailyPostsError struct{}
+
+func (e ExceededMaximumDailyPostsError) Error() string {
+	return "exceeded maximum daily posts"
+}
