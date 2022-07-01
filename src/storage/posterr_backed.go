@@ -24,7 +24,7 @@ const (
                  FROM posts
                  WHERE username IN (
                      SELECT followed_by
-                     FROM follows 
+                     FROM followers
                      WHERE followed_by = $1) 
                  ORDER BY created_at DESC
                  LIMIT 10
