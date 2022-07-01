@@ -58,7 +58,7 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		switch err.(type) {
-		case storage.UserAlreadyFollowsError, storage.UserDoesNotFollowError:
+		case storage.SelfFollowError, storage.UserAlreadyFollowsError, storage.UserDoesNotFollowError:
 			rw.WriteHeader(http.StatusBadRequest)
 		default:
 			rw.WriteHeader(http.StatusInternalServerError)

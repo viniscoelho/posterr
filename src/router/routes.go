@@ -21,7 +21,7 @@ func CreateRoutes(posts types.Posterr, users types.Users) *mux.Router {
 		Methods(http.MethodGet).
 		Name("ListHomePosts").
 		Handler(routercontent.NewListHomeContentHandler(posts))
-	r.Path("/posterr/content/profile/{username}").
+	r.Path("/posterr/content/{username}").
 		Methods(http.MethodGet).
 		Name("ListProfileContent").
 		Handler(routercontent.NewListProfileContentHandler(posts))

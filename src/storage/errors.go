@@ -2,6 +2,14 @@ package storage
 
 import "fmt"
 
+type SelfFollowError struct {
+	user string
+}
+
+func (e SelfFollowError) Error() string {
+	return fmt.Sprintf("%s cannot unfollow itself", e.user)
+}
+
 type UserAlreadyFollowsError struct {
 	user     string
 	follower string

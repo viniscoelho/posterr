@@ -238,7 +238,7 @@ func (ub *userBacked) FollowUser(username, follower string) error {
 // i.e., follower unfollows username
 func (ub *userBacked) UnfollowUser(username, follower string) error {
 	if username == follower {
-		return fmt.Errorf("%s cannot unfollow itself", username)
+		return SelfFollowError{username}
 	}
 
 	conn, err := ub.db.Connect()
