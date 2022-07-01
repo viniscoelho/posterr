@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	maxDailyPosts = 5
+	maxDailyPosts      = 5
+	defaultSearchLimit = 10
 
 	selectAllPosts = `SELECT post_id, username, COALESCE(content, ''), COALESCE(reposted_id, ''), created_at
                  FROM posts
@@ -135,6 +136,10 @@ func (pb *posterrBacked) SearchContent(content string, limit, offset int) ([]typ
 		return nil, fmt.Errorf("could not connect to database: %w", err)
 	}
 	defer conn.Close()
+
+	if limit == 0 {
+		limit = defaultSearchLimit
+	}
 
 	rows, err := conn.Query(context.Background(), searchPosts, content, limit, offset)
 	if err != nil {
