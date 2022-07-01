@@ -128,7 +128,7 @@ func (ub *userBacked) CountUserPosts(username string) (int, error) {
 	var dailyPosts int
 	for rows.Next() {
 		if err = rows.Scan(&dailyPosts); err != nil {
-			return 0, fmt.Errorf("could not scan rows: %w", err)
+			return 0, fmt.Errorf("could not scan countUserPosts rows: %w", err)
 		}
 	}
 
@@ -162,7 +162,7 @@ func (ub *userBacked) CountUserFollowers(username string) (int, error) {
 	var followers int
 	for rows.Next() {
 		if err = rows.Scan(&followers); err != nil {
-			return 0, fmt.Errorf("could not scan rows: %w", err)
+			return 0, fmt.Errorf("could not scan countFollowers rows: %w", err)
 		}
 	}
 
@@ -202,7 +202,7 @@ func (ub *userBacked) CountUserFollowing(username string) (int, error) {
 	var following int
 	for rows.Next() {
 		if err = rows.Scan(&following); err != nil {
-			return 0, fmt.Errorf("could not scan rows: %w", err)
+			return 0, fmt.Errorf("could not scan countFollowing rows: %w", err)
 		}
 	}
 
@@ -215,11 +215,11 @@ func (ub *userBacked) CountUserFollowing(username string) (int, error) {
 	return following, nil
 }
 
-// FollowUser ensures that userA is followed by userB,
-// i.e., userB follows userA
-func (ub *userBacked) FollowUser(userA, userB string) error {
-	if userA == userB {
-		return fmt.Errorf("%s cannot follow itself", userA)
+// FollowUser ensures that username is followed by follower,
+// i.e., follower follows username
+func (ub *userBacked) FollowUser(username, follower string) error {
+	if username == follower {
+		return fmt.Errorf("%s cannot follow itself", username)
 	}
 
 	conn, err := ub.db.Connect()
@@ -228,18 +228,18 @@ func (ub *userBacked) FollowUser(userA, userB string) error {
 	}
 	defer conn.Close()
 
-	isFollowingUser, err := ub.IsFollowingUser(userA, userB)
+	isFollowingUser, err := ub.IsFollowingUser(username, follower)
 	if err != nil {
 		return fmt.Errorf("could not check activity: %w", err)
 	}
 
 	if isFollowingUser {
-		return fmt.Errorf("%s already follows %s", userA, userB)
+		return UserAlreadyFollowsError{username, follower}
 	}
 
-	defer ub.resetCountCache(userA, userB)
+	defer ub.resetCountCache(username, follower)
 	_, err = conn.Exec(context.Background(), "INSERT INTO followers (username, followed_by) VALUES ($1, $2)",
-		userA, userB)
+		username, follower)
 	if err != nil {
 		return fmt.Errorf("could not insert into followers: %w", err)
 	}
@@ -247,11 +247,11 @@ func (ub *userBacked) FollowUser(userA, userB string) error {
 	return nil
 }
 
-// UnfollowUser ensures that userA is unfollowed by userB,
-// i.e., userB unfollows userA
-func (ub *userBacked) UnfollowUser(userA, userB string) error {
-	if userA == userB {
-		return fmt.Errorf("%s cannot unfollow itself", userA)
+// UnfollowUser ensures that username is unfollowed by follower,
+// i.e., follower unfollows username
+func (ub *userBacked) UnfollowUser(username, follower string) error {
+	if username == follower {
+		return fmt.Errorf("%s cannot unfollow itself", username)
 	}
 
 	conn, err := ub.db.Connect()
@@ -260,18 +260,18 @@ func (ub *userBacked) UnfollowUser(userA, userB string) error {
 	}
 	defer conn.Close()
 
-	isFollowingUser, err := ub.IsFollowingUser(userA, userB)
+	isFollowingUser, err := ub.IsFollowingUser(username, follower)
 	if err != nil {
 		return fmt.Errorf("could not check activity: %w", err)
 	}
 
 	if !isFollowingUser {
-		return fmt.Errorf("%s does not follow %s", userA, userB)
+		return UserDoesNotFollowError{username, follower}
 	}
 
-	defer ub.resetCountCache(userA, userB)
+	defer ub.resetCountCache(username, follower)
 	_, err = conn.Exec(context.Background(), "DELETE FROM followers WHERE username = $1 AND followed_by = $2",
-		userA, userB)
+		username, follower)
 	if err != nil {
 		return fmt.Errorf("could not delete row from followers: %w", err)
 	}
@@ -279,16 +279,16 @@ func (ub *userBacked) UnfollowUser(userA, userB string) error {
 	return nil
 }
 
-// IsFollowingUser checks if userA is followed by userB,
-// i.e., userB follows userA
-func (ub *userBacked) IsFollowingUser(userA, userB string) (bool, error) {
+// IsFollowingUser checks if username is followed by follower,
+// i.e., follower follows username
+func (ub *userBacked) IsFollowingUser(username, follower string) (bool, error) {
 	conn, err := ub.db.Connect()
 	if err != nil {
 		return false, fmt.Errorf("could not connect to database: %w", err)
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), isFollowerOf, userA, userB)
+	rows, err := conn.Query(context.Background(), isFollowerOf, username, follower)
 	if err != nil {
 		return false, fmt.Errorf("could not perform query: %w", err)
 	}
@@ -296,7 +296,7 @@ func (ub *userBacked) IsFollowingUser(userA, userB string) (bool, error) {
 	var countRows int
 	for rows.Next() {
 		if err = rows.Scan(&countRows); err != nil {
-			return false, fmt.Errorf("could not scan rows: %w", err)
+			return false, fmt.Errorf("could not scan isFollowerOf rows: %w", err)
 		}
 	}
 
@@ -320,7 +320,7 @@ func (ub *userBacked) getUserDetails(username string) (types.PosterrUser, error)
 	var userProfile types.PosterrUser
 	for rows.Next() {
 		if err = rows.Scan(&userProfile.Username, &userProfile.JoinedAt); err != nil {
-			return types.PosterrUser{}, fmt.Errorf("could not scan rows: %w", err)
+			return types.PosterrUser{}, fmt.Errorf("could not scan selectUser rows: %w", err)
 		}
 	}
 
