@@ -23,7 +23,7 @@ func NewSearchContentHandler(posts types.Posterr) *searchContent {
 }
 
 func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("username")
+	text := r.FormValue("text")
 	limitQuery := r.FormValue("limit")
 	offsetQuery := r.FormValue("offset")
 
@@ -45,7 +45,7 @@ func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := h.posts.SearchContent(username, limit, offset)
+	posts, err := h.posts.SearchContent(text, limit, offset)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		h.logger.Errorf("Request failed: %s", err)

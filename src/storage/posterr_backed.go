@@ -45,7 +45,7 @@ const (
 
 	searchPosts = `SELECT post_id, username, COALESCE(content, ''), COALESCE(reposted_id, ''), created_at
                  FROM posts
-                 WHERE content LIKE '%$1%'
+                 WHERE content IS NOT NULL AND content LIKE '%' || $1 || '%'
                  ORDER BY created_at DESC
                  LIMIT $2
                  OFFSET $3`
@@ -130,7 +130,7 @@ func (pb *posterrBacked) ListProfileContent(username string, offset int) ([]type
 
 // SearchContent returns a lists of posts matching a substring criteria.
 // The number of returned posts can be specified by the providing a limit.
-func (pb *posterrBacked) SearchContent(content string, limit, offset int) ([]types.PosterrContent, error) {
+func (pb *posterrBacked) SearchContent(text string, limit, offset int) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
@@ -141,7 +141,7 @@ func (pb *posterrBacked) SearchContent(content string, limit, offset int) ([]typ
 		limit = defaultSearchLimit
 	}
 
-	rows, err := conn.Query(context.Background(), searchPosts, content, limit, offset)
+	rows, err := conn.Query(context.Background(), searchPosts, text, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("could not perform searchPosts query: %w", err)
 	}
