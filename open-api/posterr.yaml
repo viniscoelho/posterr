@@ -1,0 +1,210 @@
+swagger: "2.0"
+info:
+  version: "2.0.0"
+  title: "Posterr API"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+paths:
+  /posterr/content:
+    post:
+      summary: "Creates a post content."
+      description: >-
+        Creates a post content. A post content can have a maximum of 777 characters and it can be either a regular post, a repost or a quoted repost. Also, a user can post up to 5 times a day.
+      parameters:
+        - in: body
+          name: "content"
+          description: "Instructions how to create a post."
+          required: true
+          schema:
+            $ref: "#/definitions/PosterrWrite"
+      responses:
+        "201":
+          description: >-
+            Post content created successfully.
+        "400":
+          description: >-
+            User exceeded maximum number of daily posts.
+        "500":
+          description: >-
+            Internal server error while processing the request.
+  /posterr/content/home:
+    get:
+      summary: "List home page posts."
+      parameters:
+        - in: query
+          name: "offset"
+          type: "integer"
+          required: false
+          description: "Pagination offset"
+      description: >-
+        Returns an array containing a list of posts. The posts are divided by: **All** (from any user) and **Following** (only by the users a user follows) passed though the body via toggle: 0 for **All**, 1 for **Following**. Each request returns up to 10 posts. Pagination is supported by providing on offset query parameter.
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: >-
+            A list of posts is returned.
+          schema:
+            $ref: "#/definitions/Posterrs"
+        "500":
+          description: >-
+            Internal server error while processing the request.
+  /posterr/content/{username}:
+    get:
+      summary: "List user posts."
+      parameters:
+        - in: path
+          name: "username"
+          type: "string"
+          required: true
+          description: "A username"
+        - in: query
+          name: "offset"
+          type: "integer"
+          required: false
+          description: "Pagination offset"
+      description: >-
+        Returns an array containing a list of posts of a user. Each request returns up to 5 posts. Pagination is supported by providing on offset query parameter.
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: >-
+            Returns a list of posts.
+          schema:
+            $ref: "#/definitions/Posterrs"
+  /posterr/user/{username}:
+    get:
+      summary: "Gets a user profile."
+      parameters:
+        - in: path
+          name: "username"
+          type: "string"
+          required: true
+          description: "A username"
+      description: >-
+        Returns a user details, such as no. of followers, no. of following users, no. of posts, name and joined date.
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: >-
+            User details fetched successfully.
+          schema:
+            $ref: "#/definitions/PosterrUser"
+        "500":
+          description: >-
+            Internal server error while processing the request.
+  /posterr/user/{username}/follow:
+    post:
+      summary: "Follows or unfollows a user."
+      description: >-
+        Indicates whereas a user starts following or unfollowing another user. The target user is given in the path string and the follower user is passed through the body. To indicate which operation is targeted, a toggle should be provided through the body: 0 for **Follow**, 1 for **Unfollow**.
+      parameters:
+        - in: path
+          name: "username"
+          type: "string"
+          required: true
+          description: "A username"
+        - name: "follow"
+          in: "body"
+          description: "Instructions how to follow/unfollow a user."
+          required: true
+          schema:
+            $ref: "#/definitions/Follow"
+      responses:
+        "204":
+          description: >-
+            Follow/Unfollow user completed successfully.
+        "400":
+          description: >-
+            Either one of: i) user tried to follow itself; ii) follower already follows user; iii) follower does not follow user.
+        "500":
+          description: >-
+            Internal server error while processing the request.
+definitions:
+  PosterrUser:
+    type: "object"
+    properties:
+      username:
+        type: "string"
+      followers:
+        type: "integer"
+      following:
+        type: "integer"
+      posts_count:
+        type: "integer"
+      joined_at:
+        type: "string"
+    example:
+      username: "jiraia"
+      followers: 10
+      following: 15
+      posts_count: 30
+      joined_at: "2022-06-29T23:56:12.949996-03:00"
+  PosterrWrite:
+    type: "object"
+    properties:
+      username:
+        type: "string"
+      content:
+        type: "string"
+        maxLength: 777
+      reposted_id:
+        type: "string"
+    example:
+      username: "jiraia"
+      content: "hello there"
+      reposted_id: "8bef15ac-27ae-4349-b357-2edc27445c34"
+  PosterrContent:
+    type: "object"
+    properties:
+      post_id:
+        type: "string"
+      username:
+        type: "string"
+      content:
+        type: "string"
+        maxLength: 777
+      reposted_id:
+        type: "string"
+      created_at:
+        type: "string"
+    example:
+      post_id: "8bef15ac-27ae-4349-b357-2edc27445c51"
+      username: "jiraia"
+      content: "hello there"
+      reposted_id: "8bef15ac-27ae-4349-b357-2edc27445c34"
+      created_at: "2022-06-29T23:56:12.949996-03:00"
+  Posterrs:
+    type: "array"
+    items:
+      $ref: "#/definitions/PosterrContent"
+    example:
+      [
+        {
+          post_id: "8bef15ac-27ae-4349-b357-2edc27445c51",
+          username: "jiraia",
+          content: "hello there",
+          reposted_id: "8bef15ac-27ae-4349-b357-2edc27445c34",
+          created_at: "2022-06-29T23:56:12.949996-03:00"
+        }
+      ]
+  Follow:
+    type: "object"
+    required:
+      - "username"
+      - "toggle"
+    properties:
+      username:
+        type: "string"
+      toggle:
+        type: "integer"
+        maxLength: 777
+    example:
+      username: "jiraia"
+      toggle: 1
