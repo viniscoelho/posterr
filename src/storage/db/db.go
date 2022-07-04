@@ -137,9 +137,6 @@ func createUsersTable(conn *pgxpool.Pool) error {
 	return nil
 }
 
-// NOTE: reposted_id should be a foreign key,
-// but an empty key violates the constraint and
-// raises an error
 func createPostsTable(conn *pgxpool.Pool) error {
 	table := `CREATE TABLE posts(
         post_id VARCHAR (36) PRIMARY KEY,
