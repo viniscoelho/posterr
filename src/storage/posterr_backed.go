@@ -62,9 +62,9 @@ func NewPosterrBacked(db storagedb.ConnectDB) *posterrBacked {
 }
 
 // ListHomePageContent returns a list of posts:
-// - If the toggle is All, returns a list of posts from the whole database
-// - If the toggle is Following, returns a list of posts only from the users a given username follows
-// Each call returns 10 posts at most
+// - If the toggle is All, returns a list of posts from the whole database;
+// - If the toggle is Following, returns a list of posts only from the users a given username follows.
+// Each call returns 10 posts at most.
 func (pb *posterrBacked) ListHomePageContent(username string, offset int, toggle types.PostsListToggle) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
@@ -101,8 +101,8 @@ func (pb *posterrBacked) ListHomePageContent(username string, offset int, toggle
 	return posts, nil
 }
 
-// ListProfileContent returns a lists of posts for a given username
-// Each call returns 5 posts at most
+// ListProfileContent returns a lists of posts for a given username.
+// Each call returns 5 posts at most.
 func (pb *posterrBacked) ListProfileContent(username string, offset int) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
@@ -129,7 +129,7 @@ func (pb *posterrBacked) ListProfileContent(username string, offset int) ([]type
 }
 
 // SearchContent returns a lists of posts matching a substring criteria.
-// The number of returned posts can be specified by the providing a limit.
+// The number of returned posts can be customized by the limit parameter.
 func (pb *posterrBacked) SearchContent(text string, limit, offset int) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
@@ -159,7 +159,7 @@ func (pb *posterrBacked) SearchContent(text string, limit, offset int) ([]types.
 	return posts, nil
 }
 
-// WriteContent creates a post for a given username and returns the postId
+// WriteContent creates a post for a given username and returns the postId.
 func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) (string, error) {
 	if len(postContent) == 0 && len(repostedId) == 0 {
 		return "", fmt.Errorf("either content or reposted_id should have a value")
@@ -200,7 +200,7 @@ func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) 
 	return postId, nil
 }
 
-// countDailyPosts returns how many posts where made in a single day
+// countDailyPosts returns how many posts where made in a single day.
 func (pb *posterrBacked) countDailyPosts(username string) (int, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
