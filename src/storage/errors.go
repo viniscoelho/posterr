@@ -2,7 +2,11 @@ package storage
 
 import "fmt"
 
-const NoRowsInResultSet = "no rows in result set"
+const (
+	valueTooLongErrorCode        = "SQLSTATE 22001"
+	foreignKeyViolationErrorCode = "SQLSTATE 23503"
+	noRowsInResult               = "no rows in result set"
+)
 
 type UserDoesNotExistError struct {
 	username string
@@ -18,6 +22,14 @@ type InvalidUsernameError struct {
 
 func (e InvalidUsernameError) Error() string {
 	return fmt.Sprintf("invalid username %s: username must consist of alphanumeric charactes only", e.username)
+}
+
+type PostIdDoesNotExistError struct {
+	postId string
+}
+
+func (e PostIdDoesNotExistError) Error() string {
+	return fmt.Sprintf("post id %s is not registered", e.postId)
 }
 
 type SelfFollowError struct {
@@ -56,4 +68,18 @@ type InvalidToggleError struct{}
 
 func (e InvalidToggleError) Error() string {
 	return "invalid toggle selected"
+}
+
+type UsernameExceededMaximumCharsError struct {
+	username string
+}
+
+func (e UsernameExceededMaximumCharsError) Error() string {
+	return fmt.Sprintf("username %s exceeded maximum allowed chars", e.username)
+}
+
+type PostExceededMaximumCharsError struct{}
+
+func (e PostExceededMaximumCharsError) Error() string {
+	return "post exceeded maximum allowed chars"
 }

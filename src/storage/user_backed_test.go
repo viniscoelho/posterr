@@ -36,13 +36,13 @@ func TestUserCreation(t *testing.T) {
 	t.Run("Username too big", func(t *testing.T) {
 		username := rs.GenerateUnique(maxUsernameLength + 1)
 		err = users.CreateUser(username)
-		assert.Error(err)
+		assert.Equal(UsernameExceededMaximumCharsError{username}, err)
 	})
 
 	t.Run("Username with invalid characters", func(t *testing.T) {
 		username := fmt.Sprintf("%s@", rs.GenerateUnique(maxUsernameLength-1))
 		err = users.CreateUser(username)
-		assert.Error(err)
+		assert.Equal(InvalidUsernameError{username}, err)
 	})
 }
 

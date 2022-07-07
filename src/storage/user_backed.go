@@ -69,6 +69,9 @@ func (ub *userBacked) CreateUser(username string) error {
 
 	_, err = conn.Exec(context.Background(), "INSERT INTO users (username) VALUES ($1)", username)
 	if err != nil {
+		if strings.Contains(err.Error(), valueTooLongErrorCode) {
+			return UsernameExceededMaximumCharsError{username}
+		}
 		return fmt.Errorf("could not insert into users: %w", err)
 	}
 
@@ -301,14 +304,10 @@ func (ub *userBacked) getUserDetails(username string) (types.PosterrUser, error)
 	}
 	defer conn.Close()
 
-	row := conn.QueryRow(context.Background(), selectUser, username)
-	if err != nil {
-		return types.PosterrUser{}, fmt.Errorf("could not perform selectUser query: %w", err)
-	}
-
 	var userProfile types.PosterrUser
+	row := conn.QueryRow(context.Background(), selectUser, username)
 	if err = row.Scan(&userProfile.Username, &userProfile.JoinedAt); err != nil {
-		if strings.Contains(err.Error(), NoRowsInResultSet) {
+		if strings.Contains(err.Error(), noRowsInResult) {
 			return types.PosterrUser{}, UserDoesNotExistError{username}
 		}
 		return types.PosterrUser{}, fmt.Errorf("could not scan selectUser rows: %w", err)
