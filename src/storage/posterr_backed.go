@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	storagedb "posterr/src/storage/db"
 	"posterr/src/types"
@@ -194,6 +195,7 @@ func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) 
 	}
 
 	if err != nil {
+		if strings.Contains(err.Error(), )
 		return "", fmt.Errorf("could not insert into posts: %w", err)
 	}
 

@@ -10,7 +10,7 @@ This will create a `cover.out` file which will be opened in browser tab, showing
 This information is also available in the command line.
 
 ## How to use it
-For this project, I've used PostgresSQL as a database. You can install it from [here](https://www.postgresql.org/download/) and choose the appropriate version for your OS.
+For this project, I've used PostgreSQL as a database. You can install it from [here](https://www.postgresql.org/download/) and choose the appropriate version for your OS.
 
 Run `go build -o posterr .` in the `src` folder. The following arguments are available:
 - `--init-db` - Initializes the database. Required at first run.
