@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 	"sync"
 
 	storagedb "posterr/src/storage/db"
@@ -57,7 +58,7 @@ func NewUserBacked(db storagedb.ConnectDB) *userBacked {
 // CreateUser creates a user. This method is not exposed through an API
 func (ub *userBacked) CreateUser(username string) error {
 	if !ub.rgx.MatchString(username) {
-		return fmt.Errorf("invalid username: a username must consist of alphanumeric charactes only")
+		return InvalidUsernameError{username}
 	}
 
 	conn, err := ub.db.Connect()
@@ -300,16 +301,17 @@ func (ub *userBacked) getUserDetails(username string) (types.PosterrUser, error)
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), selectUser, username)
+	row := conn.QueryRow(context.Background(), selectUser, username)
 	if err != nil {
 		return types.PosterrUser{}, fmt.Errorf("could not perform selectUser query: %w", err)
 	}
 
 	var userProfile types.PosterrUser
-	for rows.Next() {
-		if err = rows.Scan(&userProfile.Username, &userProfile.JoinedAt); err != nil {
-			return types.PosterrUser{}, fmt.Errorf("could not scan selectUser rows: %w", err)
+	if err = row.Scan(&userProfile.Username, &userProfile.JoinedAt); err != nil {
+		if strings.Contains(err.Error(), NoRowsInResultSet) {
+			return types.PosterrUser{}, UserDoesNotExistError{username}
 		}
+		return types.PosterrUser{}, fmt.Errorf("could not scan selectUser rows: %w", err)
 	}
 
 	return userProfile, nil

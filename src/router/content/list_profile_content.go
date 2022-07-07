@@ -30,7 +30,7 @@ func (h *listProfileContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 
 	offset, err := parseIntQueryParam(offsetQuery)
 	if err != nil {
-		h.logger.Errorf("Error parsing limit: %s", err)
+		h.logger.Errorf("Error parsing offset: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 	}

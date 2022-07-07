@@ -37,7 +37,7 @@ func (h *listHomeContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	toggle, err := parseIntQueryParam(toggleQuery)
 	if err != nil {
-		h.logger.Errorf("Error parsing limit: %s", err)
+		h.logger.Errorf("Error parsing toggle: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 	}

@@ -115,6 +115,9 @@ paths:
             Returns a list of posts.
           schema:
             $ref: "#/definitions/Posterrs"
+        "500":
+          description: >-
+            Internal server error while processing the request.
   /posterr/user/{username}:
     get:
       summary: "Gets a user profile."
@@ -134,6 +137,9 @@ paths:
             User details fetched successfully.
           schema:
             $ref: "#/definitions/PosterrUser"
+        "404":
+          description: >-
+            User was not registered in the database.
         "500":
           description: >-
             Internal server error while processing the request.

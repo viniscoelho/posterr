@@ -2,6 +2,24 @@ package storage
 
 import "fmt"
 
+const NoRowsInResultSet = "no rows in result set"
+
+type UserDoesNotExistError struct {
+	username string
+}
+
+func (e UserDoesNotExistError) Error() string {
+	return fmt.Sprintf("username %s is not registered", e.username)
+}
+
+type InvalidUsernameError struct {
+	username string
+}
+
+func (e InvalidUsernameError) Error() string {
+	return fmt.Sprintf("invalid username %s: username must consist of alphanumeric charactes only", e.username)
+}
+
 type SelfFollowError struct {
 	user string
 }

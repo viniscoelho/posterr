@@ -2,7 +2,10 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"posterr/src/storage"
 	"posterr/src/types"
 
 	"github.com/gorilla/mux"
@@ -27,9 +30,15 @@ func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	user, err := h.users.GetUserProfile(username)
 	if err != nil {
+		switch err.(type) {
+		case storage.UserDoesNotExistError:
+			rw.WriteHeader(http.StatusNotFound)
+		default:
+			rw.WriteHeader(http.StatusInternalServerError)
+		}
 		h.logger.Errorf("Request failed: %s", err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("internal server error"))
+		message := fmt.Sprintf("could not get user details: %s", err)
+		rw.Write([]byte(message))
 
 		return
 	}
