@@ -177,6 +177,8 @@ func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) 
 		return "", fmt.Errorf("could not count daily posts: %w", err)
 	}
 
+	// TODO: conditional statements nesting, services' methods have multiple responsibilities:
+	// request handling, data persistence, exceptions handling, etc.
 	postId := uuid.New().String()
 	if dailyPosts >= maxDailyPosts {
 		return "", ExceededMaximumDailyPostsError{}

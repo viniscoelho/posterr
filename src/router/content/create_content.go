@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"posterr/src/storage"
 	"posterr/src/types"
 
 	"github.com/sirupsen/logrus"
@@ -46,12 +45,8 @@ func (h *createContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	_, err = h.posts.WriteContent(dto.Username, dto.Content, dto.RepostedID)
 	if err != nil {
-		switch err.(type) {
-		case storage.ExceededMaximumDailyPostsError:
-			rw.WriteHeader(http.StatusBadRequest)
-		default:
-			rw.WriteHeader(http.StatusInternalServerError)
-		}
+		statusCode := getStatusCodeFromError(err)
+		rw.WriteHeader(statusCode)
 		h.logger.Errorf("Request failed: %s", err)
 		message := fmt.Sprintf("could not complete write content operation: %s", err.Error())
 		rw.Write([]byte(message))

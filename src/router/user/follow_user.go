@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"posterr/src/storage"
 	"posterr/src/types"
 
 	"github.com/gorilla/mux"
@@ -57,12 +56,8 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		err = fmt.Errorf("invalid toggle selected")
 	}
 	if err != nil {
-		switch err.(type) {
-		case storage.SelfFollowError, storage.UserAlreadyFollowsError, storage.UserDoesNotFollowError:
-			rw.WriteHeader(http.StatusBadRequest)
-		default:
-			rw.WriteHeader(http.StatusInternalServerError)
-		}
+		statusCode := getStatusCodeFromError(err)
+		rw.WriteHeader(statusCode)
 		h.logger.Errorf("Request failed: %s", err)
 		message := fmt.Sprintf("could not complete follow/unfollow operation: %s", err.Error())
 		rw.Write([]byte(message))

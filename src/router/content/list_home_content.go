@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"posterr/src/storage"
 	"posterr/src/types"
 
 	"github.com/sirupsen/logrus"
@@ -44,12 +43,8 @@ func (h *listHomeContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	posts, err := h.posts.ListHomePageContent(username, offset, types.PostsListToggle(toggle))
 	if err != nil {
-		switch err.(type) {
-		case storage.InvalidToggleError:
-			rw.WriteHeader(http.StatusBadRequest)
-		default:
-			rw.WriteHeader(http.StatusInternalServerError)
-		}
+		statusCode := getStatusCodeFromError(err)
+		rw.WriteHeader(statusCode)
 		h.logger.Errorf("Request failed: %s", err)
 		message := fmt.Sprintf("could not complete list home page content operation: %s", err.Error())
 		rw.Write([]byte(message))

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"posterr/src/storage"
 	"posterr/src/types"
 
 	"github.com/gorilla/mux"
@@ -30,12 +29,8 @@ func (h *readUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	user, err := h.users.GetUserProfile(username)
 	if err != nil {
-		switch err.(type) {
-		case storage.UserDoesNotExistError:
-			rw.WriteHeader(http.StatusNotFound)
-		default:
-			rw.WriteHeader(http.StatusInternalServerError)
-		}
+		statusCode := getStatusCodeFromError(err)
+		rw.WriteHeader(statusCode)
 		h.logger.Errorf("Request failed: %s", err)
 		message := fmt.Sprintf("could not get user details: %s", err)
 		rw.Write([]byte(message))
