@@ -42,7 +42,7 @@ func TestWritePost(t *testing.T) {
 	t.Run("Should not post if content is too long", func(t *testing.T) {
 		content := rs.GenerateAny(maxContentSize + 1)
 		_, err = posts.WriteContent(username, content, "")
-		assert.Error(err)
+		assert.Equal(PostExceededMaximumCharsError{}, err)
 	})
 }
 
@@ -72,7 +72,7 @@ func TestTooManyPostsInASingleDay(t *testing.T) {
 
 	content := rs.GenerateAny(maxContentSize)
 	_, err = posts.WriteContent(username, content, "")
-	assert.Error(err)
+	assert.Equal(ExceededMaximumDailyPostsError{}, err)
 }
 
 func TestRepost(t *testing.T) {
@@ -107,7 +107,16 @@ func TestRepost(t *testing.T) {
 		assert.NoError(err)
 
 		_, err = posts.WriteContent(username, "", "somePostId")
-		assert.Error(err)
+		assert.Equal(PostIdDoesNotExistError{"somePostId"}, err)
+	})
+
+	t.Run("Should not repost if username does not existing", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize)
+		postId, err := posts.WriteContent(username, content, "")
+		assert.NoError(err)
+
+		_, err = posts.WriteContent("notauser", "", postId)
+		assert.Equal(UserDoesNotExistError{"notauser"}, err)
 	})
 }
 
@@ -143,6 +152,15 @@ func TestQuotedRepost(t *testing.T) {
 		assert.NoError(err)
 
 		_, err = posts.WriteContent(username, "check this out", "somePostId")
-		assert.Error(err)
+		assert.Equal(PostIdDoesNotExistError{"somePostId"}, err)
+	})
+
+	t.Run("Should not quote repost if username does not existing", func(t *testing.T) {
+		content := rs.GenerateAny(maxContentSize)
+		postId, err := posts.WriteContent(username, content, "")
+		assert.NoError(err)
+
+		_, err = posts.WriteContent("notauser", "check this out", postId)
+		assert.Equal(UserDoesNotExistError{"notauser"}, err)
 	})
 }

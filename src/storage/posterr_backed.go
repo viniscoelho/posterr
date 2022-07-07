@@ -194,8 +194,17 @@ func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) 
 			postId, username, postContent, repostedId)
 	}
 
+	// TODO: improve this error handling logic
 	if err != nil {
-		if strings.Contains(err.Error(), )
+		if strings.Contains(err.Error(), valueTooLongErrorCode) {
+			return "", PostExceededMaximumCharsError{}
+		} else if strings.Contains(err.Error(), foreignKeyViolationErrorCode) {
+			if strings.Contains(err.Error(), "posts_username_fkey") {
+				return "", UserDoesNotExistError{username}
+			} else if strings.Contains(err.Error(), "posts_reposted_id_fkey") {
+				return "", PostIdDoesNotExistError{repostedId}
+			}
+		}
 		return "", fmt.Errorf("could not insert into posts: %w", err)
 	}
 
