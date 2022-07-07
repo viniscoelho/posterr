@@ -54,7 +54,7 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	case Unfollow:
 		err = h.users.UnfollowUser(username, dto.Username)
 	default:
-		err = InvalidToggleError{}
+		err = fmt.Errorf("invalid toggle selected")
 	}
 	if err != nil {
 		switch err.(type) {
