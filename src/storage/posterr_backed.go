@@ -25,7 +25,7 @@ const (
 	selectFollowingPosts = `SELECT post_id, username, COALESCE(content, ''), COALESCE(reposted_id, ''), created_at
                  FROM posts
                  WHERE username IN (
-                     SELECT followed_by
+                     SELECT username
                      FROM followers
                      WHERE followed_by = $1) 
                  ORDER BY created_at DESC
