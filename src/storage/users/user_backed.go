@@ -198,7 +198,7 @@ func (ub *userBacked) ListFollowers(username string) ([]types.PosterrUser, error
 // i.e., follower follows username
 func (ub *userBacked) FollowUser(username, follower string) error {
 	if username == follower {
-		return fmt.Errorf("%s cannot follow itself", username)
+		return SelfFollowError{username}
 	}
 
 	conn, err := ub.db.Connect()

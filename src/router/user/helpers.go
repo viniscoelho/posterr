@@ -3,7 +3,6 @@ package user
 import (
 	"net/http"
 
-	storageposterr "posterr/src/storage/posterr"
 	storageusers "posterr/src/storage/users"
 )
 
@@ -24,7 +23,7 @@ func getStatusCodeFromError(err error) int {
 	case storageusers.SelfFollowError,
 		storageusers.UserAlreadyFollowsError, storageusers.UserDoesNotFollowError:
 		return http.StatusBadRequest
-	case storageusers.UserDoesNotExistError, storageposterr.PostIdDoesNotExistError:
+	case storageusers.UserDoesNotExistError:
 		return http.StatusNotFound
 	default:
 		return http.StatusInternalServerError

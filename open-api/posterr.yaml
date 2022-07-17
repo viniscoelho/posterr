@@ -22,7 +22,7 @@ paths:
           name: "limit"
           type: "integer"
           required: false
-          description: "Limit of returned pages. If not given, default set to 10"
+          description: "Limit of returned pages. If not given, default value set to 10"
         - in: query
           name: "offset"
           type: "integer"
@@ -38,6 +38,9 @@ paths:
             Returns a list of posts.
           schema:
             $ref: "#/definitions/Posterrs"
+        "500":
+          description: >-
+            Internal server error while processing the request.
     post:
       summary: "Creates a post content."
       description: >-
@@ -55,6 +58,12 @@ paths:
             Post content created successfully.
         "400":
           description: >-
+            Post exceeded maximum allowed size.
+        "404":
+          description: >-
+            Either one of: i) User who is trying to post does not exist; ii) The referrenced post id does not exist.
+        "429":
+          description: >-
             User exceeded maximum number of daily posts.
         "500":
           description: >-
@@ -67,7 +76,7 @@ paths:
           name: "username"
           type: "string"
           required: false
-          description: "Username to filter post by. Required if toggle value is 1"
+          description: "Username to filter posts. Required if toggle provided"
         - in: query
           name: "offset"
           type: "integer"
@@ -75,11 +84,11 @@ paths:
           description: "Pagination offset"
         - in: query
           name: "toggle"
-          type: "integer"
+          type: "boolean"
           required: false
-          description: "Toggle view option. Requires username if toggle value is 1"
+          description: "Toggle view option. Username required if toggle is provided"
       description: >-
-        Returns an array containing a list of posts. The posts are divided by: 0 (or **All**, from any user) and 1 (or **Following**, only by the users a user follows). Each request returns up to 10 posts. Pagination is supported by providing on offset query parameter.
+        Returns an array containing a list of posts. The posts are divided by: **All** (from any user) and **Following** (only by the users a user follows). Each request returns up to 10 posts. Pagination is supported by providing on offset query parameter.
       produces:
         - "application/json"
       responses:
@@ -88,6 +97,9 @@ paths:
             A list of posts is returned.
           schema:
             $ref: "#/definitions/Posterrs"
+        "400":
+          description: >-
+            Invalid toggle selected.
         "500":
           description: >-
             Internal server error while processing the request.
@@ -99,7 +111,7 @@ paths:
           name: "username"
           type: "string"
           required: true
-          description: "A username"
+          description: "The target username"
         - in: query
           name: "offset"
           type: "integer"
@@ -118,7 +130,7 @@ paths:
         "500":
           description: >-
             Internal server error while processing the request.
-  /posterr/user/{username}:
+  /posterr/users/{username}:
     get:
       summary: "Gets a user profile."
       parameters:
@@ -126,7 +138,7 @@ paths:
           name: "username"
           type: "string"
           required: true
-          description: "A username"
+          description: "The target username"
       description: >-
         Returns a user details, such as no. of followers, no. of following users, no. of posts, name and joined date.
       produces:
@@ -143,30 +155,73 @@ paths:
         "500":
           description: >-
             Internal server error while processing the request.
-  /posterr/user/{username}/follow:
-    post:
-      summary: "Follows or unfollows a user."
+  /posterr/users/{username}/followers:
+    get:
+      summary: "Returns a list of followers of a user."
       description: >-
-        Indicates whereas a user starts following or unfollowing another user. The target user is given in the path string and the follower user is passed through the body. To indicate which operation is targeted, a toggle should be provided through the body: 0 for **Follow** and 1 for **Unfollow**.
+        Returns a list of followers of a user. The username is given in the path string.
       parameters:
         - in: path
           name: "username"
           type: "string"
           required: true
-          description: "A username"
-        - name: "follow"
-          in: "body"
-          description: "Instructions how to follow/unfollow a user."
+          description: "The target username"
+      responses:
+        "200":
+          description: >-
+            A list of followers of a given user is returned.
+        "500":
+          description: >-
+            Internal server error while processing the request.
+  /posterr/users/{username}/follow:
+    post:
+      summary: "Follows a user."
+      description: >-
+        Indicates whereas a user starts following another user. The current user is given in the path string and the target user is given in the query.
+      parameters:
+        - in: path
+          name: "username"
+          type: "string"
           required: true
-          schema:
-            $ref: "#/definitions/Follow"
+          description: "The username of whom is processing the request"
+        - in: query
+          name: "target"
+          type: "string"
+          description: "The target username"
+          required: true
       responses:
         "204":
           description: >-
-            Follow/Unfollow user completed successfully.
+            Follow user completed successfully.
         "400":
           description: >-
-            Either one of: i) user tried to follow itself; ii) follower already follows user; iii) follower does not follow user.
+            Either one of: i) user tried to follow itself; ii) user already follows target user.
+        "500":
+          description: >-
+            Internal server error while processing the request.
+  /posterr/users/{username}/unfollow:
+    post:
+      summary: "Unfollows a user."
+      description: >-
+        Indicates whereas a user unfollows another user. The current user is given in the path string and the target user is given in the query.
+      parameters:
+        - in: path
+          name: "username"
+          type: "string"
+          required: true
+          description: "The username of whom is processing the request"
+        - in: query
+          name: "target"
+          type: "string"
+          description: "The target username"
+          required: true
+      responses:
+        "204":
+          description: >-
+            Unfollow user completed successfully.
+        "400":
+          description: >-
+            Either one of: i) user tried to unfollow itself; ii) user does not follow target user.
         "500":
           description: >-
             Internal server error while processing the request.
@@ -238,17 +293,3 @@ definitions:
           created_at: "2022-06-29T23:56:12.949996-03:00"
         }
       ]
-  Follow:
-    type: "object"
-    required:
-      - "username"
-      - "toggle"
-    properties:
-      username:
-        type: "string"
-      toggle:
-        type: "integer"
-        maxLength: 777
-    example:
-      username: "jiraia"
-      toggle: 1

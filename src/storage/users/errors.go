@@ -45,7 +45,7 @@ type SelfFollowError struct {
 }
 
 func (e SelfFollowError) Error() string {
-	return fmt.Sprintf("%s cannot unfollow itself", e.user)
+	return fmt.Sprintf("%s cannot follow or unfollow itself", e.user)
 }
 
 type UserAlreadyFollowsError struct {
