@@ -30,14 +30,23 @@ func CreateRoutes(posts types.Posterr, users types.Users) *mux.Router {
 		Name("ListProfileContent").
 		Handler(routercontent.NewListProfileContentHandler(posts))
 
-	r.Path("/posterr/user/{username}").
+	r.Path("/posterr/users/{username}").
 		Methods(http.MethodGet).
 		Name("ReadUser").
 		Handler(routeruser.NewReadUserHandler(users))
-	r.Path("/posterr/user/{username}/follow").
+	r.Path("/posterr/users/{username}/followers").
+		Methods(http.MethodGet).
+		Name("ListFollowers").
+		Handler(routeruser.NewListFollowersHandler(users))
+
+	r.Path("/posterr/users/{username}/follow").
 		Methods(http.MethodPost).
 		Name("FollowUser").
 		Handler(routeruser.NewFollowUserHandler(users))
+	r.Path("/posterr/users/{username}/unfollow").
+		Methods(http.MethodPost).
+		Name("UnfollowUser").
+		Handler(routeruser.NewUnfollowUserHandler(users))
 
 	return r
 }

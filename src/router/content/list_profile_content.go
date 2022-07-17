@@ -29,7 +29,7 @@ func (h *listProfileContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 
 	err := r.ParseForm()
 	if err != nil {
-		h.logger.Errorf("Error parsing param form: %s", err)
+		h.logger.Errorf("Error parsing form: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 	}
