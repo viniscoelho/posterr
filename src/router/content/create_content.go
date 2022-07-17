@@ -43,7 +43,32 @@ func (h *createContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.posts.WriteContent(dto.Username, dto.Content, dto.RepostedID)
+	if len(dto.Content) == 0 && len(dto.RepostedID) == 0 {
+		rw.WriteHeader(http.StatusBadRequest)
+		h.logger.Error("Request failed: either content or reposted_id should have a value")
+		message := fmt.Sprintf("could not complete write content operation: " +
+			"either content or reposted_id should have a value")
+		rw.Write([]byte(message))
+
+		return
+	}
+
+	h.WriteContent(rw, dto)
+}
+
+func (h *createContent) WriteContent(rw http.ResponseWriter, dto PostContentDTO) {
+	var err error
+	if len(dto.RepostedID) == 0 {
+		// if RepostedID is empty, this is a regular post
+		_, err = h.posts.WriteContent(dto.Username, dto.Content)
+	} else if len(dto.Content) == 0 {
+		// if Content is empty, this is a repost
+		_, err = h.posts.WriteRepostContent(dto.Username, dto.RepostedID)
+	} else {
+		// otherwise, this is a quoted-repost
+		_, err = h.posts.WriteQuoteRepostContent(dto.Username, dto.Content, dto.RepostedID)
+	}
+
 	if err != nil {
 		statusCode := getStatusCodeFromError(err)
 		rw.WriteHeader(statusCode)

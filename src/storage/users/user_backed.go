@@ -86,16 +86,10 @@ func (ub *userBacked) CountUserPosts(username string) (int, error) {
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), countUserPosts, username)
-	if err != nil {
-		return 0, fmt.Errorf("could not perform countUserPosts query: %w", err)
-	}
-
 	var dailyPosts int
-	for rows.Next() {
-		if err = rows.Scan(&dailyPosts); err != nil {
-			return 0, fmt.Errorf("could not scan countUserPosts rows: %w", err)
-		}
+	row := conn.QueryRow(context.Background(), countUserPosts, username)
+	if err = row.Scan(&dailyPosts); err != nil {
+		return 0, fmt.Errorf("could not scan countUserPosts rows: %w", err)
 	}
 
 	return dailyPosts, nil
@@ -120,16 +114,10 @@ func (ub *userBacked) CountUserFollowers(username string) (int, error) {
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), countFollowers, username)
-	if err != nil {
-		return 0, fmt.Errorf("could not perform countFollowers query: %w", err)
-	}
-
 	var followers int
-	for rows.Next() {
-		if err = rows.Scan(&followers); err != nil {
-			return 0, fmt.Errorf("could not scan countFollowers rows: %w", err)
-		}
+	row := conn.QueryRow(context.Background(), countFollowers, username)
+	if err = row.Scan(&followers); err != nil {
+		return 0, fmt.Errorf("could not scan countFollowers rows: %w", err)
 	}
 
 	func(username string) {
@@ -160,16 +148,10 @@ func (ub *userBacked) CountUserFollowing(username string) (int, error) {
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), countFollowing, username)
-	if err != nil {
-		return 0, fmt.Errorf("could not perform countFollowing query: %w", err)
-	}
-
 	var following int
-	for rows.Next() {
-		if err = rows.Scan(&following); err != nil {
-			return 0, fmt.Errorf("could not scan countFollowing rows: %w", err)
-		}
+	row := conn.QueryRow(context.Background(), countFollowing, username)
+	if err = row.Scan(&following); err != nil {
+		return 0, fmt.Errorf("could not scan countFollowing rows: %w", err)
 	}
 
 	func(username string) {
@@ -286,16 +268,10 @@ func (ub *userBacked) IsFollowingUser(username, follower string) (bool, error) {
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(context.Background(), isFollowerOf, username, follower)
-	if err != nil {
-		return false, fmt.Errorf("could not perform isFollowerOf query: %w", err)
-	}
-
 	var countRows int
-	for rows.Next() {
-		if err = rows.Scan(&countRows); err != nil {
-			return false, fmt.Errorf("could not scan isFollowerOf rows: %w", err)
-		}
+	row := conn.QueryRow(context.Background(), isFollowerOf, username, follower)
+	if err = row.Scan(&countRows); err != nil {
+		return false, fmt.Errorf("could not scan isFollowerOf rows: %w", err)
 	}
 
 	return countRows == 1, nil

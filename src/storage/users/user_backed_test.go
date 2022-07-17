@@ -234,7 +234,7 @@ func TestCountUserPosts(t *testing.T) {
 	noPosts := 4
 	for i := 0; i < noPosts; i++ {
 		content := rs.GenerateAny(maxContentSize)
-		_, err = posts.WriteContent(username, content, "")
+		_, err = posts.WriteContent(username, content)
 		assert.NoError(err)
 	}
 

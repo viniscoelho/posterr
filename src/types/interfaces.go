@@ -34,7 +34,9 @@ type Posterr interface {
 	ListHomePageContent(username string, offset int, toggle bool) ([]PosterrContent, error)
 	ListProfileContent(username string, offset int) ([]PosterrContent, error)
 	SearchContent(text string, limit, offset int) ([]PosterrContent, error)
-	WriteContent(username, postContent, repostedId string) (string, error)
+	WriteContent(username, postContent string) (string, error)
+	WriteRepostContent(username, repostedId string) (string, error)
+	WriteQuoteRepostContent(username, postContent, repostedId string) (string, error)
 }
 
 type Users interface {

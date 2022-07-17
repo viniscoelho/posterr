@@ -125,11 +125,7 @@ func (pb *posterrBacked) SearchContent(text string, limit, offset int) ([]types.
 }
 
 // WriteContent creates a post for a given username and returns the postId.
-func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) (string, error) {
-	if len(postContent) == 0 && len(repostedId) == 0 {
-		return "", fmt.Errorf("either content or reposted_id should have a value")
-	}
-
+func (pb *posterrBacked) WriteContent(username, postContent string) (string, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
 		return "", fmt.Errorf("could not connect to database: %w", err)
@@ -141,25 +137,69 @@ func (pb *posterrBacked) WriteContent(username, postContent, repostedId string) 
 		return "", fmt.Errorf("could not count daily posts: %w", err)
 	}
 
-	// TODO: conditional statements nesting, services' methods have multiple responsibilities:
-	// request handling, data persistence, exceptions handling, etc.
 	postId := uuid.New().String()
 	if dailyPosts >= maxDailyPosts {
 		return "", ExceededMaximumDailyPostsError{}
-	} else if len(repostedId) == 0 {
-		// if repostedId is empty, this is a regular post
-		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content) VALUES ($1, $2, $3)",
-			postId, username, postContent)
-	} else if len(postContent) == 0 {
-		// if postContent is empty, this is a repost
-		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, reposted_id) VALUES ($1, $2, $3)",
-			postId, username, repostedId)
-	} else {
-		// otherwise, this is a quoted-repost
-		_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content, reposted_id) VALUES ($1, $2, $3, $4)",
-			postId, username, postContent, repostedId)
 	}
 
+	_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content) VALUES ($1, $2, $3)",
+		postId, username, postContent)
+	if err != nil {
+		err = fmt.Errorf("could not insert into posts: %w", err)
+		return "", getErrorFromString(err, username, "")
+	}
+
+	return postId, nil
+}
+
+// WriteRepostContent creates a repost for a given username and returns the postId.
+func (pb *posterrBacked) WriteRepostContent(username, repostedId string) (string, error) {
+	conn, err := pb.db.Connect()
+	if err != nil {
+		return "", fmt.Errorf("could not connect to database: %w", err)
+	}
+	defer conn.Close()
+
+	dailyPosts, err := pb.countDailyPosts(username)
+	if err != nil {
+		return "", fmt.Errorf("could not count daily posts: %w", err)
+	}
+
+	postId := uuid.New().String()
+	if dailyPosts >= maxDailyPosts {
+		return "", ExceededMaximumDailyPostsError{}
+	}
+
+	_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, reposted_id) VALUES ($1, $2, $3)",
+		postId, username, repostedId)
+	if err != nil {
+		err = fmt.Errorf("could not insert into posts: %w", err)
+		return "", getErrorFromString(err, username, repostedId)
+	}
+
+	return postId, nil
+}
+
+// WriteQuoteRepostContent creates a quote repost for a given username and returns the postId.
+func (pb *posterrBacked) WriteQuoteRepostContent(username, postContent, repostedId string) (string, error) {
+	conn, err := pb.db.Connect()
+	if err != nil {
+		return "", fmt.Errorf("could not connect to database: %w", err)
+	}
+	defer conn.Close()
+
+	dailyPosts, err := pb.countDailyPosts(username)
+	if err != nil {
+		return "", fmt.Errorf("could not count daily posts: %w", err)
+	}
+
+	postId := uuid.New().String()
+	if dailyPosts >= maxDailyPosts {
+		return "", ExceededMaximumDailyPostsError{}
+	}
+
+	_, err = conn.Exec(context.Background(), "INSERT INTO posts (post_id, username, content, reposted_id) VALUES ($1, $2, $3, $4)",
+		postId, username, postContent, repostedId)
 	if err != nil {
 		err = fmt.Errorf("could not insert into posts: %w", err)
 		return "", getErrorFromString(err, username, repostedId)

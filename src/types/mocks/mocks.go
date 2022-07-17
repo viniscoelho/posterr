@@ -35,7 +35,7 @@ func (m *MockPosterr) EXPECT() *MockPosterrMockRecorder {
 }
 
 // ListHomePageContent mocks base method.
-func (m *MockPosterr) ListHomePageContent(arg0 string, arg1 int, arg2 types.PostsListToggle) ([]types.PosterrContent, error) {
+func (m *MockPosterr) ListHomePageContent(arg0 string, arg1 int, arg2 bool) ([]types.PosterrContent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListHomePageContent", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]types.PosterrContent)
@@ -64,19 +64,64 @@ func (mr *MockPosterrMockRecorder) ListProfileContent(arg0, arg1 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProfileContent", reflect.TypeOf((*MockPosterr)(nil).ListProfileContent), arg0, arg1)
 }
 
-// WriteContent mocks base method.
-func (m *MockPosterr) WriteContent(arg0, arg1, arg2 string) (string, error) {
+// SearchContent mocks base method.
+func (m *MockPosterr) SearchContent(arg0 string, arg1, arg2 int) ([]types.PosterrContent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteContent", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "SearchContent", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]types.PosterrContent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchContent indicates an expected call of SearchContent.
+func (mr *MockPosterrMockRecorder) SearchContent(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchContent", reflect.TypeOf((*MockPosterr)(nil).SearchContent), arg0, arg1, arg2)
+}
+
+// WriteContent mocks base method.
+func (m *MockPosterr) WriteContent(arg0, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteContent", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WriteContent indicates an expected call of WriteContent.
-func (mr *MockPosterrMockRecorder) WriteContent(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockPosterrMockRecorder) WriteContent(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteContent", reflect.TypeOf((*MockPosterr)(nil).WriteContent), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteContent", reflect.TypeOf((*MockPosterr)(nil).WriteContent), arg0, arg1)
+}
+
+// WriteQuoteRepostContent mocks base method.
+func (m *MockPosterr) WriteQuoteRepostContent(arg0, arg1, arg2 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteQuoteRepostContent", arg0, arg1, arg2)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WriteQuoteRepostContent indicates an expected call of WriteQuoteRepostContent.
+func (mr *MockPosterrMockRecorder) WriteQuoteRepostContent(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteQuoteRepostContent", reflect.TypeOf((*MockPosterr)(nil).WriteQuoteRepostContent), arg0, arg1, arg2)
+}
+
+// WriteRepostContent mocks base method.
+func (m *MockPosterr) WriteRepostContent(arg0, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteRepostContent", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WriteRepostContent indicates an expected call of WriteRepostContent.
+func (mr *MockPosterrMockRecorder) WriteRepostContent(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteRepostContent", reflect.TypeOf((*MockPosterr)(nil).WriteRepostContent), arg0, arg1)
 }
 
 // MockUsers is a mock of Users interface.
@@ -176,10 +221,10 @@ func (mr *MockUsersMockRecorder) FollowUser(arg0, arg1 interface{}) *gomock.Call
 }
 
 // GetUserProfile mocks base method.
-func (m *MockUsers) GetUserProfile(arg0 string) (types.PosterrUser, error) {
+func (m *MockUsers) GetUserProfile(arg0 string) (types.PosterrUserDetailed, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserProfile", arg0)
-	ret0, _ := ret[0].(types.PosterrUser)
+	ret0, _ := ret[0].(types.PosterrUserDetailed)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -203,6 +248,21 @@ func (m *MockUsers) IsFollowingUser(arg0, arg1 string) (bool, error) {
 func (mr *MockUsersMockRecorder) IsFollowingUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsFollowingUser", reflect.TypeOf((*MockUsers)(nil).IsFollowingUser), arg0, arg1)
+}
+
+// ListFollowers mocks base method.
+func (m *MockUsers) ListFollowers(arg0 string) ([]types.PosterrUser, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListFollowers", arg0)
+	ret0, _ := ret[0].([]types.PosterrUser)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListFollowers indicates an expected call of ListFollowers.
+func (mr *MockUsersMockRecorder) ListFollowers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFollowers", reflect.TypeOf((*MockUsers)(nil).ListFollowers), arg0)
 }
 
 // UnfollowUser mocks base method.
