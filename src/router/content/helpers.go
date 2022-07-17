@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"posterr/src/storage"
+	storageposterr "posterr/src/storage/posterr"
 )
 
 const (
@@ -42,11 +42,11 @@ func parseBoolQueryParam(param string, r *http.Request) bool {
 
 func getStatusCodeFromError(err error) int {
 	switch err.(type) {
-	case storage.PostExceededMaximumCharsError, storage.InvalidToggleError:
+	case storageposterr.PostExceededMaximumCharsError, storageposterr.InvalidToggleError:
 		return http.StatusBadRequest
-	case storage.UserDoesNotExistError, storage.PostIdDoesNotExistError:
+	case storageposterr.UserDoesNotExistError, storageposterr.PostIdDoesNotExistError:
 		return http.StatusNotFound
-	case storage.ExceededMaximumDailyPostsError:
+	case storageposterr.ExceededMaximumDailyPostsError:
 		return http.StatusTooManyRequests
 	default:
 		return http.StatusInternalServerError

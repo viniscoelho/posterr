@@ -34,7 +34,7 @@ func (h *followUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	username := vars["username"]
 	targetUsername := parseQueryParam(targetUsernameQuery, r)
 
-	err = h.users.FollowUser(username, targetUsername)
+	err = h.users.FollowUser(targetUsername, username)
 	if err != nil {
 		statusCode := getStatusCodeFromError(err)
 		rw.WriteHeader(statusCode)

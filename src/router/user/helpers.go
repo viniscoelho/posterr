@@ -2,7 +2,9 @@ package user
 
 import (
 	"net/http"
-	"posterr/src/storage"
+
+	storageposterr "posterr/src/storage/posterr"
+	storageusers "posterr/src/storage/users"
 )
 
 const (
@@ -19,10 +21,10 @@ func parseQueryParam(param string, r *http.Request) string {
 
 func getStatusCodeFromError(err error) int {
 	switch err.(type) {
-	case storage.SelfFollowError,
-		storage.UserAlreadyFollowsError, storage.UserDoesNotFollowError:
+	case storageusers.SelfFollowError,
+		storageusers.UserAlreadyFollowsError, storageusers.UserDoesNotFollowError:
 		return http.StatusBadRequest
-	case storage.UserDoesNotExistError, storage.PostIdDoesNotExistError:
+	case storageusers.UserDoesNotExistError, storageposterr.PostIdDoesNotExistError:
 		return http.StatusNotFound
 	default:
 		return http.StatusInternalServerError

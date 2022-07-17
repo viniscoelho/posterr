@@ -11,7 +11,11 @@ const (
 )
 
 type PosterrUser struct {
-	Username   string    `json:"username"`
+	Username string `json:"username"`
+}
+
+type PosterrUserDetailed struct {
+	PosterrUser
 	Followers  int       `json:"followers"`
 	Following  int       `json:"following"`
 	PostsCount int       `json:"posts_count"`
@@ -35,11 +39,12 @@ type Posterr interface {
 
 type Users interface {
 	CreateUser(username string) error
-	GetUserProfile(username string) (PosterrUser, error)
+	GetUserProfile(username string) (PosterrUserDetailed, error)
 	CountUserPosts(username string) (int, error)
 	CountUserFollowers(username string) (int, error)
 	CountUserFollowing(username string) (int, error)
-	FollowUser(userA, userB string) error
-	UnfollowUser(userA, userB string) error
-	IsFollowingUser(userA, userB string) (bool, error)
+	ListFollowers(username string) ([]PosterrUser, error)
+	FollowUser(targetUser, currentUser string) error
+	UnfollowUser(targetUser, currentUser string) error
+	IsFollowingUser(targetUser, currentUser string) (bool, error)
 }

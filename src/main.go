@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"posterr/src/router"
-	"posterr/src/storage"
 	storagedb "posterr/src/storage/db"
+	"posterr/src/storage/posterr"
+	storageusers "posterr/src/storage/users"
 
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
@@ -29,8 +30,8 @@ func main() {
 		}
 	}
 
-	posts := storage.NewPosterrBacked(db)
-	users := storage.NewUserBacked(db)
+	posts := posterr.NewPosterrBacked(db)
+	users := storageusers.NewUserBacked(db)
 
 	r := router.CreateRoutes(posts, users)
 	c := cors.New(cors.Options{
