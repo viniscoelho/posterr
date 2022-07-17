@@ -66,7 +66,7 @@ func NewPosterrBacked(db storagedb.ConnectDB) *posterrBacked {
 // - If the toggle is All, returns a list of posts from the whole database;
 // - If the toggle is Following, returns a list of posts only from the users a given username follows.
 // Each call returns 10 posts at most.
-func (pb *posterrBacked) ListHomePageContent(username string, offset int, toggle types.PostsListToggle) ([]types.PosterrContent, error) {
+func (pb *posterrBacked) ListHomePageContent(username string, offset int, toggle bool) ([]types.PosterrContent, error) {
 	conn, err := pb.db.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)

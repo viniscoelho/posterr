@@ -26,9 +26,15 @@ func NewListProfileContentHandler(posts types.Posterr) *listProfileContent {
 func (h *listProfileContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
-	offsetQuery := r.FormValue("offset")
 
-	offset, err := parseIntQueryParam(offsetQuery)
+	err := r.ParseForm()
+	if err != nil {
+		h.logger.Errorf("Error parsing param form: %s", err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("internal server error"))
+	}
+
+	offset, err := parseIntQueryParam(offsetQuery, r)
 	if err != nil {
 		h.logger.Errorf("Error parsing offset: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)

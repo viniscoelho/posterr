@@ -5,11 +5,9 @@ import (
 	"time"
 )
 
-type PostsListToggle int
-
 const (
-	All PostsListToggle = iota
-	Following
+	All       = false
+	Following = true
 )
 
 type PosterrUser struct {
@@ -29,7 +27,7 @@ type PosterrContent struct {
 }
 
 type Posterr interface {
-	ListHomePageContent(username string, offset int, toggle PostsListToggle) ([]PosterrContent, error)
+	ListHomePageContent(username string, offset int, toggle bool) ([]PosterrContent, error)
 	ListProfileContent(username string, offset int) ([]PosterrContent, error)
 	SearchContent(text string, limit, offset int) ([]PosterrContent, error)
 	WriteContent(username, postContent, repostedId string) (string, error)

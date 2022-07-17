@@ -23,25 +23,24 @@ func NewListHomeContentHandler(posts types.Posterr) *listHomeContent {
 }
 
 func (h *listHomeContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("username")
-	offsetQuery := r.FormValue("offset")
-	toggleQuery := r.FormValue("toggle")
-
-	offset, err := parseIntQueryParam(offsetQuery)
+	err := r.ParseForm()
 	if err != nil {
-		h.logger.Errorf("Error parsing limit: %s", err)
+		h.logger.Errorf("Error parsing param form: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 	}
 
-	toggle, err := parseIntQueryParam(toggleQuery)
+	offset, err := parseIntQueryParam(offsetQuery, r)
 	if err != nil {
-		h.logger.Errorf("Error parsing toggle: %s", err)
+		h.logger.Errorf("Error parsing offset: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("internal server error"))
 	}
 
-	posts, err := h.posts.ListHomePageContent(username, offset, types.PostsListToggle(toggle))
+	username := parseQueryParam(usernameQuery, r)
+	toggle := parseBoolQueryParam(toggleQuery, r)
+
+	posts, err := h.posts.ListHomePageContent(username, offset, toggle)
 	if err != nil {
 		statusCode := getStatusCodeFromError(err)
 		rw.WriteHeader(statusCode)

@@ -23,11 +23,14 @@ func NewSearchContentHandler(posts types.Posterr) *searchContent {
 }
 
 func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	text := r.FormValue("text")
-	limitQuery := r.FormValue("limit")
-	offsetQuery := r.FormValue("offset")
+	err := r.ParseForm()
+	if err != nil {
+		h.logger.Errorf("Error parsing param form: %s", err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("internal server error"))
+	}
 
-	limit, err := parseIntQueryParam(limitQuery)
+	limit, err := parseIntQueryParam(limitQuery, r)
 	if err != nil {
 		h.logger.Errorf("Error parsing limit: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -36,7 +39,7 @@ func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	offset, err := parseIntQueryParam(offsetQuery)
+	offset, err := parseIntQueryParam(offsetQuery, r)
 	if err != nil {
 		h.logger.Errorf("Error parsing offset: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -44,6 +47,8 @@ func (h *searchContent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	text := parseQueryParam(textQuery, r)
 
 	posts, err := h.posts.SearchContent(text, limit, offset)
 	if err != nil {
